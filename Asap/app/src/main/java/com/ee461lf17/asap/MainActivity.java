@@ -3,6 +3,9 @@ package com.ee461lf17.asap;
 import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.design.widget.NavigationView;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
@@ -36,6 +39,10 @@ public class MainActivity extends AppCompatActivity {
      */
     private ViewPager mViewPager;
 
+    private DrawerLayout mDrawer;
+    private NavigationView nvDrawer;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,6 +58,17 @@ public class MainActivity extends AppCompatActivity {
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
+        // Set up sidenav drawer
+        mDrawer = findViewById(R.id.drawer_layout);
+        nvDrawer = (NavigationView) findViewById(R.id.navigation);
+        setupDrawerContent(nvDrawer);
+
+        // Set up toggle for drawer layout
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, mDrawer, toolbar, R.string.side_nav_open, R.string.side_nav_close);
+        mDrawer.setDrawerListener(toggle);
+        toggle.syncState();
+
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
 
@@ -63,6 +81,40 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private void setupDrawerContent(NavigationView navigationView) {
+        navigationView.setNavigationItemSelectedListener(
+                new NavigationView.OnNavigationItemSelectedListener() {
+                    @Override
+                    public boolean onNavigationItemSelected(MenuItem menuItem) {
+                        selectDrawerItem(menuItem);
+                        return true;
+                    }
+
+                });
+    }
+     // Use this function to take action on keypress
+    public void selectDrawerItem(MenuItem menuItem) {
+        switch (menuItem.getItemId()) {
+            case R.id.sync_budgets:
+                // Sync the budgets by pulling/pushing changes
+                Snackbar.make(nvDrawer, "Sync budget selected", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+                break;
+            case R.id.select_budget:
+                // Trigger event to select a different budget, maybe use a dropdown?
+                Snackbar.make(nvDrawer, "Select budget selected", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+                break;
+            case R.id.user:
+                // View user profile, maybe switch account
+                Snackbar.make(nvDrawer, "User selected", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+                break;
+        }
+        // Do anything else, maybe close drawer
+        //mDrawer.closeDrawers();
     }
 
 
