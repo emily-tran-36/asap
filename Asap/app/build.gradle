@@ -26,5 +26,13 @@ dependencies {
     })
     compile 'com.android.support:appcompat-v7:26.+'
     compile 'com.android.support:design:26.+'
+    compile 'com.google.android.gms:play-services-auth:11.6.0'
+    compile 'pub.devrel:easypermissions:0.3.0'
+    compile('com.google.api-client:google-api-client-android:1.23.0') {
+        exclude group: 'org.apache.httpcomponents'
+    }
+    compile('com.google.apis:google-api-services-sheets:v4-rev490-1.23.0') {
+        exclude group: 'org.apache.httpcomponents'
+    }
     testCompile 'junit:junit:4.12'
 }
