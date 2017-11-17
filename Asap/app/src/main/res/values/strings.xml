@@ -2,4 +2,10 @@
     <string name="app_name">Asap</string>
     <string name="action_settings">Settings</string>
     <string name="section_format">Hello World from section: %1$d</string>
+    <string name="side_nav_user">Hello PlaceHolderUser</string>
+    <string name="side_nav_add_budget">Add budget +</string>
+    <string name="side_nav_sync_budgets">Sync</string>
+    <string name="side_nav_open">Open</string>
+    <string name="side_nav_close">Close</string>
+    <string name="side_nav_header">A$AP</string>
 </resources>
