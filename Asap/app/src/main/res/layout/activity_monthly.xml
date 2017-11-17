@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.ee461lf17.asap.MonthlyActivity">
+
+
+    <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="368dp"
+        android:layout_height="400dp"
+        android:layout_marginTop="160dp"
+        android:stretchColumns="1"
+        tools:layout_editor_absoluteY="0dp"
+        tools:layout_editor_absoluteX="8dp">
+        <TableRow>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:padding="3dip"
+                android:text="Groceries" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:gravity="center"
+                android:padding="3dip"
+                android:text="Food" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:gravity="right"
+                android:padding="3dip"
+                android:text="$34.53" />
+        </TableRow>
+
+        <TableRow>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:padding="3dip"
+                android:text="Gas" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:gravity="center"
+                android:padding="3dip"
+                android:text="Transport" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:gravity="right"
+                android:padding="3dip"
+                android:text="$34.53" />
+        </TableRow>
+    </TableLayout>
+</android.support.constraint.ConstraintLayout>
