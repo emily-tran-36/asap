@@ -1,5 +1,6 @@
 package com.ee461lf17.asap;
 
+import android.content.Context;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
@@ -10,11 +11,13 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
@@ -70,12 +73,47 @@ public class MonthlyActivity extends AppCompatActivity {
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+
+        com.github.clans.fab.FloatingActionButton account = (com.github.clans.fab.FloatingActionButton) findViewById(R.id.fabAccount);
+        account.setOnClickListener(new View.OnClickListener(){
             @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+            public void onClick(View view){
+                LayoutInflater inflater = (LayoutInflater) MonthlyActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                View layout = inflater.inflate(R.layout.activity_main,null);
+                View popupLayout = inflater.inflate(R.layout.popup_main,null);
+                float density = MonthlyActivity.this.getResources().getDisplayMetrics().density;
+                PopupWindow popup = new PopupWindow(popupLayout, (int)density*240, (int)density*285, true);
+                //PopupWindow popup = new PopupWindow((int)density*240, (int)density*285);
+                popup.showAtLocation(layout, Gravity.CENTER, 0, 0);
+            }
+        });
+
+
+        com.github.clans.fab.FloatingActionButton budget = (com.github.clans.fab.FloatingActionButton) findViewById(R.id.fabBudget);
+        budget.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view){
+                LayoutInflater inflater = (LayoutInflater) MonthlyActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                View layout = inflater.inflate(R.layout.activity_main,null);
+                View popupLayout = inflater.inflate(R.layout.popup_main,null);
+                float density = MonthlyActivity.this.getResources().getDisplayMetrics().density;
+                PopupWindow popup = new PopupWindow(popupLayout, (int)density*240, (int)density*285, true);
+                //PopupWindow popup = new PopupWindow((int)density*240, (int)density*285);
+                popup.showAtLocation(layout, Gravity.CENTER, 0, 0);
+            }
+        });
+
+        com.github.clans.fab.FloatingActionButton expense = (com.github.clans.fab.FloatingActionButton) findViewById(R.id.fabExpense);
+        expense.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view){
+                LayoutInflater inflater = (LayoutInflater) MonthlyActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                View layout = inflater.inflate(R.layout.activity_main,null);
+                View popupLayout = inflater.inflate(R.layout.popup_main,null);
+                float density = MonthlyActivity.this.getResources().getDisplayMetrics().density;
+                PopupWindow popup = new PopupWindow(popupLayout, (int)density*240, (int)density*285, true);
+                //PopupWindow popup = new PopupWindow((int)density*240, (int)density*285);
+                popup.showAtLocation(layout, Gravity.CENTER, 0, 0);
             }
         });
 
