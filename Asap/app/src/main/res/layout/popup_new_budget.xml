@@ -17,7 +17,7 @@
         android:textAppearance="@style/TextAppearance.AppCompat.Large" />
 
     <EditText
-        android:id="@+id/newAccountName"
+        android:id="@+id/newBudgetName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
@@ -25,7 +25,7 @@
         android:inputType="textPersonName" />
 
     <EditText
-        android:id="@+id/newAccountAmount"
+        android:id="@+id/newBudgetAmount"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
@@ -33,14 +33,14 @@
         android:inputType="text|number" />
 
     <Button
-        android:id="@+id/confirm_new_account"
+        android:id="@+id/confirm_new_budget"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:text="Confirm" />
 
     <Button
-        android:id="@+id/cancel_new_account"
+        android:id="@+id/cancel_new_budget"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"

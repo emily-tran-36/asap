@@ -20,6 +20,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.PopupWindow;
@@ -47,8 +49,10 @@ public class MainActivity extends AppCompatActivity {
     private DrawerLayout mDrawer;
     private NavigationView nvDrawer;
 
-//    private ListView mainListView ;
-//    private ArrayAdapter<String> listAdapter ;
+    static ArrayList<String> budgetList = new ArrayList<String>();
+    static ArrayList<String> accountsList = new ArrayList<String>();
+
+
 
 
     @Override
@@ -88,11 +92,36 @@ public class MainActivity extends AppCompatActivity {
                 View layout = inflater.inflate(R.layout.activity_main,null);
                 View popupLayout = inflater.inflate(R.layout.popup_new_account,null);
                 float density = MainActivity.this.getResources().getDisplayMetrics().density;
-                PopupWindow popup = new PopupWindow(popupLayout, (int)density*240, (int)density*285, true);
+                final PopupWindow popup = new PopupWindow(popupLayout, (int)density*240, (int)density*285, true);
                 //PopupWindow popup = new PopupWindow((int)density*240, (int)density*285);
                 popup.showAtLocation(layout, Gravity.CENTER, 0, 0);
-            }
+
+                final EditText Name = (EditText) popupLayout.findViewById(R.id.newAccountName);
+
+                ((Button) popupLayout.findViewById(R.id.confirm_new_account))
+                        .setOnClickListener(new View.OnClickListener() {
+
+                            public void onClick(View arg0) {
+                                accountsList.add(Name.getText().toString());
+                                popup.dismiss();
+
+                            }
+
+                        });
+
+                ((Button) popupLayout.findViewById(R.id.cancel_new_account))
+                        .setOnClickListener(new View.OnClickListener() {
+
+                            public void onClick(View arg0) {
+                                popup.dismiss();
+
+                            }
+
+                        });
+
+            };
         });
+
 
 
         com.github.clans.fab.FloatingActionButton budget = (com.github.clans.fab.FloatingActionButton) findViewById(R.id.fabBudget);
@@ -103,9 +132,33 @@ public class MainActivity extends AppCompatActivity {
                 View layout = inflater.inflate(R.layout.activity_main,null);
                 View popupLayout = inflater.inflate(R.layout.popup_new_budget,null);
                 float density = MainActivity.this.getResources().getDisplayMetrics().density;
-                PopupWindow popup = new PopupWindow(popupLayout, (int)density*240, (int)density*285, true);
+                final PopupWindow popup = new PopupWindow(popupLayout, (int)density*240, (int)density*285, true);
                 //PopupWindow popup = new PopupWindow((int)density*240, (int)density*285);
                 popup.showAtLocation(layout, Gravity.CENTER, 0, 0);
+
+
+                final EditText Name = (EditText) popupLayout.findViewById(R.id.newBudgetName);
+
+                ((Button) popupLayout.findViewById(R.id.confirm_new_budget))
+                        .setOnClickListener(new View.OnClickListener() {
+
+                            public void onClick(View arg0) {
+                                budgetList.add(Name.getText().toString());
+                                popup.dismiss();
+
+                            }
+
+                        });
+
+                ((Button) popupLayout.findViewById(R.id.cancel_new_budget))
+                        .setOnClickListener(new View.OnClickListener() {
+
+                            public void onClick(View arg0) {
+                                popup.dismiss();
+
+                            }
+
+                        });
             }
         });
 
@@ -221,7 +274,7 @@ public class MainActivity extends AppCompatActivity {
             if(viewNumber == 1){
                 //Budget List
                 String[] budgets = new String[] { "Monthy", "Fun", "House"};
-                ArrayList<String> budgetList = new ArrayList<String>();
+                //ArrayList<String> budgetList = new ArrayList<String>();
                 budgetList.addAll( Arrays.asList(budgets) );
                 // Create ArrayAdapter using the budget list.
                 ListAdapter budgetAdapter = new ArrayAdapter<String>(getActivity(), R.layout.simplerow, budgetList);
@@ -230,7 +283,7 @@ public class MainActivity extends AppCompatActivity {
             }
             else if(viewNumber == 2){
                 String[] accounts = new String[] { "Checking", "Personal Checking"};
-                ArrayList<String> accountsList = new ArrayList<String>();
+                //ArrayList<String> accountsList = new ArrayList<String>();
                 accountsList.addAll( Arrays.asList(accounts) );
                 // Create ArrayAdapter using the budget list.
                 ListAdapter listAdapter = new ArrayAdapter<String>(getActivity(), R.layout.simplerow, accountsList);
