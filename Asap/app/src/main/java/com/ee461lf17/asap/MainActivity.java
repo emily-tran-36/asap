@@ -97,7 +97,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         promptUserToChooseAccount();
         // Initialize credentials and service object.
 
-
     }
     //Will ensure google play services are installed and up-to-date
     //Then prompts the user to log into their google account and stores their credentials
