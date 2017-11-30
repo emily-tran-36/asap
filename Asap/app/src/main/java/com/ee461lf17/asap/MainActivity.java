@@ -30,6 +30,7 @@ import android.widget.PopupWindow;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -54,7 +55,8 @@ public class MainActivity extends AppCompatActivity {
     static ArrayList<String> budgetList = new ArrayList<String>();
     static ArrayList<String> accountsList = new ArrayList<String>();
 
-
+    static HashMap<String, ArrayList<String>> budgetMap = new HashMap<String, ArrayList<String>>();
+    static HashMap<String, String> accountsMap = new HashMap<String, String>();
 
 
     @Override
@@ -99,12 +101,17 @@ public class MainActivity extends AppCompatActivity {
                 popup.showAtLocation(layout, Gravity.CENTER, 0, 0);
 
                 final EditText Name = (EditText) popupLayout.findViewById(R.id.newAccountName);
+                final EditText Amount = (EditText) popupLayout.findViewById(R.id.newAccountAmount);
+
 
                 ((Button) popupLayout.findViewById(R.id.confirm_new_account))
                         .setOnClickListener(new View.OnClickListener() {
 
                             public void onClick(View arg0) {
+
+                                //accountsMap.put(Name.getText().toString(), Amount.getText().toString());
                                 accountsList.add(Name.getText().toString());
+
                                 popup.dismiss();
 
                             }
@@ -113,14 +120,10 @@ public class MainActivity extends AppCompatActivity {
 
                 ((Button) popupLayout.findViewById(R.id.cancel_new_account))
                         .setOnClickListener(new View.OnClickListener() {
-
                             public void onClick(View arg0) {
                                 popup.dismiss();
-
                             }
-
                         });
-
             };
         });
 
@@ -146,6 +149,13 @@ public class MainActivity extends AppCompatActivity {
 
                             public void onClick(View arg0) {
                                 budgetList.add(Name.getText().toString());
+
+//                                ArrayList<String> tempList = new ArrayList<String>();
+//                                tempList.add("Test1");
+//                                tempList.add("Test2");
+
+                                //budgetMap.put(Name.getText().toString(),tempList);
+
                                 popup.dismiss();
 
                             }
@@ -276,8 +286,13 @@ public class MainActivity extends AppCompatActivity {
             if(viewNumber == 1){
                 //Budget List
                 String[] budgets = new String[] { "Monthy", "Fun", "House"};
-                //ArrayList<String> budgetList = new ArrayList<String>();
                 budgetList.addAll( Arrays.asList(budgets) );
+//                Set<String> budgets = budgetMap.keySet();
+//                for(String s: budgets){
+//                    budgetList.add(s);
+//                }
+                budgetList.addAll( Arrays.asList(budgets) );
+
                 // Create ArrayAdapter using the budget list.
                 ListAdapter budgetAdapter = new ArrayAdapter<String>(getActivity(), R.layout.simplerow, budgetList);
                 ListView mainListView = (ListView) rootView.findViewById( R.id.mainListView );
@@ -317,7 +332,6 @@ public class MainActivity extends AppCompatActivity {
             }
             else if(viewNumber == 2){
                 String[] accounts = new String[] { "Checking", "Personal Checking"};
-                //ArrayList<String> accountsList = new ArrayList<String>();
                 accountsList.addAll( Arrays.asList(accounts) );
                 // Create ArrayAdapter using the budget list.
                 ListAdapter listAdapter = new ArrayAdapter<String>(getActivity(), R.layout.simplerow, accountsList);
@@ -329,9 +343,6 @@ public class MainActivity extends AppCompatActivity {
             else{
                 
             }
-
-
-
             return rootView;
         }
     }
