@@ -1,39 +1,23 @@
 package com.ee461lf17.asap;
 
 import android.app.Activity;
-import android.content.pm.PackageManager;
-import android.support.annotation.NonNull;
 
-import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.android.http.AndroidHttp;
-import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
-
-
-import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
-import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.api.client.util.store.FileDataStoreFactory;
+import com.google.api.services.drive.Drive;
+import com.google.api.services.drive.model.File;
 import com.google.api.services.sheets.v4.Sheets;
-import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.ValueRange;
 
-
-
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
-
-import pub.devrel.easypermissions.EasyPermissions;
 
 import static com.ee461lf17.asap.MainActivity.REQUEST_AUTHORIZATION;
 
@@ -78,7 +62,23 @@ public class Budgets {
             System.out.println("Caught an exception: " + t.toString());
         }
     }
+    //copy sheets file
+    private static File copyFile(Drive service, String originFileId,
+                                 String copyTitle) {
+        File copiedFile = new File();
+        copiedFile.setName(copyTitle);
+        try {
+            return service.files().copy(originFileId, copiedFile).execute();
+        } catch (IOException e) {
+            System.out.println("An error occurred: " + e);
+        }
+        return null;
+    }
 
+    private static String createFile(Drive service, String originFileID, String copyTitle){
+        File newFile = copyFile(service, originFileID, copyTitle);
+        return newFile.getId();
+    }
     private static void runRequestOnSeparateThread(final Activity callingActivity, final Sheets.Spreadsheets.Values.Append request) {
         new Thread(new Runnable() {
             boolean retry = true;
