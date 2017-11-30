@@ -54,4 +54,5 @@
                 android:text="$34.53" />
         </TableRow>
     </TableLayout>
+
 </android.support.constraint.ConstraintLayout>

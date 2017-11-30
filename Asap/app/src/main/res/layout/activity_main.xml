@@ -100,5 +100,9 @@
         android:layout_gravity="start"
         app:menu="@menu/side_nav"
         app:headerLayout="@layout/nav_header"/>
+
+
 </android.support.v4.widget.DrawerLayout>
+
+
 
