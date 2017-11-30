@@ -2,7 +2,6 @@ package com.ee461lf17.asap;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
@@ -87,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view){
                 LayoutInflater inflater = (LayoutInflater) MainActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                 View layout = inflater.inflate(R.layout.activity_main,null);
-                View popupLayout = inflater.inflate(R.layout.popup_main,null);
+                View popupLayout = inflater.inflate(R.layout.popup_new_account,null);
                 float density = MainActivity.this.getResources().getDisplayMetrics().density;
                 PopupWindow popup = new PopupWindow(popupLayout, (int)density*240, (int)density*285, true);
                 //PopupWindow popup = new PopupWindow((int)density*240, (int)density*285);
@@ -102,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view){
                 LayoutInflater inflater = (LayoutInflater) MainActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                 View layout = inflater.inflate(R.layout.activity_main,null);
-                View popupLayout = inflater.inflate(R.layout.popup_main,null);
+                View popupLayout = inflater.inflate(R.layout.popup_new_budget,null);
                 float density = MainActivity.this.getResources().getDisplayMetrics().density;
                 PopupWindow popup = new PopupWindow(popupLayout, (int)density*240, (int)density*285, true);
                 //PopupWindow popup = new PopupWindow((int)density*240, (int)density*285);
@@ -116,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view){
                 LayoutInflater inflater = (LayoutInflater) MainActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                 View layout = inflater.inflate(R.layout.activity_main,null);
-                View popupLayout = inflater.inflate(R.layout.popup_main,null);
+                View popupLayout = inflater.inflate(R.layout.popup_new_expense,null);
                 float density = MainActivity.this.getResources().getDisplayMetrics().density;
                 PopupWindow popup = new PopupWindow(popupLayout, (int)density*240, (int)density*285, true);
                 //PopupWindow popup = new PopupWindow((int)density*240, (int)density*285);
