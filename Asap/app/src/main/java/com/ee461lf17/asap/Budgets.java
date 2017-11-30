@@ -18,6 +18,8 @@ import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
+import com.google.api.services.drive.Drive;
+import com.google.api.services.drive.model.Permission;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.ValueRange;
@@ -32,6 +34,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+
+
 
 import pub.devrel.easypermissions.EasyPermissions;
 
@@ -116,5 +120,29 @@ public class Budgets {
         return new Sheets.Builder(httpTransport, jsonFactory, credential)
                 .setApplicationName("Asap")
                 .build();
+    }
+
+    /**
+     * Update a permission's role.
+     *
+     * @param service Drive API service instance.
+     * @param fileId ID of the file to update permission for.
+     * @param permissionId ID of the permission to update.
+     * @param newRole The value "owner", "writer" or "reader".
+     * @return The updated permission if successful, {@code null} otherwise.
+     */
+    private Permission updatePermission(Drive service, String fileId,
+                                        String permissionId, String newRole) {
+        try {
+            // First retrieve the permission from the API.
+            Permission permission = service.permissions().get(
+                    fileId, permissionId).execute();
+            permission.setRole(newRole);
+            return service.permissions().update(
+                    fileId, permissionId, permission).execute();
+        } catch (IOException e) {
+            System.out.println("An error occurred: " + e);
+        }
+        return null;
     }
 }
