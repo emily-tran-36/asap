@@ -25,8 +25,11 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListAdapter;
+import android.view.View.OnClickListener;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.PopupWindow;
+import android.widget.Spinner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -96,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
                 View layout = inflater.inflate(R.layout.activity_main,null);
                 View popupLayout = inflater.inflate(R.layout.popup_new_account,null);
                 float density = MainActivity.this.getResources().getDisplayMetrics().density;
-                final PopupWindow popup = new PopupWindow(popupLayout, (int)density*240, (int)density*285, true);
+                final PopupWindow popup = new PopupWindow(popupLayout, (int)density*240, (int)density*240, true);
                 //PopupWindow popup = new PopupWindow((int)density*240, (int)density*285);
                 popup.showAtLocation(layout, Gravity.CENTER, 0, 0);
 
@@ -137,7 +140,7 @@ public class MainActivity extends AppCompatActivity {
                 View layout = inflater.inflate(R.layout.activity_main,null);
                 View popupLayout = inflater.inflate(R.layout.popup_new_budget,null);
                 float density = MainActivity.this.getResources().getDisplayMetrics().density;
-                final PopupWindow popup = new PopupWindow(popupLayout, (int)density*240, (int)density*285, true);
+                final PopupWindow popup = new PopupWindow(popupLayout, (int)density*240, (int)density*240, true);
                 //PopupWindow popup = new PopupWindow((int)density*240, (int)density*285);
                 popup.showAtLocation(layout, Gravity.CENTER, 0, 0);
 
@@ -182,9 +185,48 @@ public class MainActivity extends AppCompatActivity {
                 View layout = inflater.inflate(R.layout.activity_main,null);
                 View popupLayout = inflater.inflate(R.layout.popup_new_expense,null);
                 float density = MainActivity.this.getResources().getDisplayMetrics().density;
-                PopupWindow popup = new PopupWindow(popupLayout, (int)density*240, (int)density*285, true);
+                final PopupWindow popup = new PopupWindow(popupLayout, (int)density*240, (int)density*285, true);
                 //PopupWindow popup = new PopupWindow((int)density*240, (int)density*285);
                 popup.showAtLocation(layout, Gravity.CENTER, 0, 0);
+
+
+                Spinner budgets = popupLayout.findViewById(R.id.spinner2);
+                String[] budgetNames = budgetList.toArray(new String[0]);
+                ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(MainActivity.this,
+                R.layout.spinner_item, budgetNames);
+                dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                budgets.setAdapter(dataAdapter);
+
+                final EditText Name = (EditText) popupLayout.findViewById(R.id.newExpenseName);
+                final EditText Amount = (EditText) popupLayout.findViewById(R.id.newExpenseAmount);
+
+                ((Button) popupLayout.findViewById(R.id.confirm_new_expense))
+                        .setOnClickListener(new View.OnClickListener() {
+
+                            public void onClick(View arg0) {
+                                //budgetList.add(Name.getText().toString());
+
+//                                ArrayList<String> tempList = new ArrayList<String>();
+//                                tempList.add("Test1");
+//                                tempList.add("Test2");
+
+                                //budgetMap.put(Name.getText().toString(),tempList);
+
+                                popup.dismiss();
+
+                            }
+
+                        });
+
+                ((Button) popupLayout.findViewById(R.id.cancel_new_expense))
+                        .setOnClickListener(new View.OnClickListener() {
+
+                            public void onClick(View arg0) {
+                                popup.dismiss();
+
+                            }
+
+                        });
             }
         });
 

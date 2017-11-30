@@ -1,8 +1,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/popup_1"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
     android:background="?attr/colorPrimary"
     android:orientation="vertical"
     android:padding="10sp" >
@@ -14,14 +14,16 @@
         android:layout_marginBottom="10dp"
         android:layout_marginTop="5sp"
         android:text="New Expense"
+        android:textColor="#ffffff"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
         android:textStyle="bold" />
 
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Name or Activity" />
+    <!--<TextView-->
+        <!--android:id="@+id/textView"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:textColor="#ffffff"-->
+        <!--android:text="Name or Activity" />-->
 
     <EditText
         android:id="@+id/newExpenseName"
@@ -29,40 +31,51 @@
         android:layout_height="wrap_content"
         android:ems="10"
         android:hint="Name"
+        android:textColor="#ffffff"
         android:inputType="text" />
 
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Cost" />
+    <!--<TextView-->
+        <!--android:id="@+id/textView2"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:textColor="#ffffff"-->
+        <!--android:text="Cost" />-->
 
     <EditText
-        android:id="@+id/newAccountAmount"
+        android:id="@+id/newExpenseAmount"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
         android:hint="Price"
+        android:textColor="#ffffff"
         android:inputType="text|number" />
+
 
     <Spinner
         android:id="@+id/spinner2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:entries="@id/mainListView" />
+        android:textColor="#ffffff"
+        android:layout_marginBottom="10dp"
+        />
 
-    <Button
-        android:id="@+id/confirm_new_account"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="Confirm" />
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <Button
+            android:id="@+id/confirm_new_expense"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:text="Confirm" />
 
-    <Button
-        android:id="@+id/cancel_new_account"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="Cancel" />
+        <Button
+            android:id="@+id/cancel_new_expense"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="left"
+            android:text="Cancel"
+        />
+    </TableRow>
 
 </LinearLayout>
