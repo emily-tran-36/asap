@@ -60,10 +60,10 @@ public class MainActivity extends AppCompatActivity {
 
     static HashMap<String, String> budgetAmountMap = new HashMap<String, String>();
     static HashMap<String, String> accountAmountMap = new HashMap<String, String>();
-    static HashMap<String, List<String>> expenseMap = new HashMap<String, List<String>>();
+    //static HashMap<String, List<String>> expenseMap = new HashMap<String, List<String>>();
 
 
-    static HashMap<String, List<String>> budgetExpenseMap = new HashMap<String, List<String>>();
+    static HashMap<String, HashMap<String, List<String>>> budgetExpenseMap = new HashMap<String, HashMap<String, List<String>>>();
     static HashMap<String, String> budgetAccountMap = new HashMap<String, String>();
 
 
@@ -181,7 +181,6 @@ public class MainActivity extends AppCompatActivity {
                                 if(budgetList.contains("There are no budgets yet.")){
                                     budgetList.remove("There are no budgets yet.");
                                 }
-                                budgetList.add(Name.getText().toString());
 
                                 budgetList.add(Name.getText().toString());
                                 budgetAmountMap.put(Name.getText().toString(), Amount.getText().toString());
@@ -222,14 +221,14 @@ public class MainActivity extends AppCompatActivity {
                 //PopupWindow popup = new PopupWindow((int)density*240, (int)density*285);
                 popup.showAtLocation(layout, Gravity.CENTER, 0, 0);
 
-                Spinner categories = popupLayout.findViewById(R.id.spinner1);
+                Spinner categories = popupLayout.findViewById(R.id.categoryspinner);
                 String[] catNames = categoriesList.toArray(new String[0]);
                 ArrayAdapter<String> catAdapter = new ArrayAdapter<String>(MainActivity.this,
                         R.layout.spinner_item, catNames);
                 catAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                 categories.setAdapter(catAdapter);
 
-                Spinner budgets = popupLayout.findViewById(R.id.spinner2);
+                Spinner budgets = popupLayout.findViewById(R.id.budgetspinner);
                 String[] budgetNames = budgetList.toArray(new String[0]);
                 ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(MainActivity.this,
                 R.layout.spinner_item, budgetNames);
@@ -238,8 +237,10 @@ public class MainActivity extends AppCompatActivity {
 
                 final EditText Name = (EditText) popupLayout.findViewById(R.id.newExpenseName);
                 final EditText Amount = (EditText) popupLayout.findViewById(R.id.newExpenseAmount);
-                final Spinner Budget = (Spinner) popupLayout.findViewById(R.id.spinner2);
+                final Spinner Budget = (Spinner) popupLayout.findViewById(R.id.budgetspinner);
                 final String budgetText = Budget.getSelectedItem().toString();
+                final Spinner Category = (Spinner) popupLayout.findViewById(R.id.categoryspinner);
+                final String categoryText = Category.getSelectedItem().toString();
 
                 ((Button) popupLayout.findViewById(R.id.confirm_new_expense))
                         .setOnClickListener(new View.OnClickListener() {
@@ -249,10 +250,13 @@ public class MainActivity extends AppCompatActivity {
 
                                 ArrayList<String> tempList = new ArrayList<String>();
                                 tempList.add(Amount.getText().toString());
+                                tempList.add(categoryText);
                                 tempList.add(budgetText);
 
+                                HashMap<String, List<String>> expenseMap = new HashMap<String, List<String>>();
                                 expenseMap.put(Name.getText().toString(),tempList);
 
+                                budgetExpenseMap.put(Name.getText().toString(),expenseMap);
                                 popup.dismiss();
 
                             }
@@ -436,7 +440,9 @@ public class MainActivity extends AppCompatActivity {
                                             int position, long id) {
                         if (position == 0) {
                             Intent myIntent = new Intent(view.getContext(), BudgetDetailsActivity.class);
-                            startActivityForResult(myIntent, 0);
+                            myIntent.putExtra("Expense Details", budgetExpenseMap);
+                            startActivity(myIntent);
+                            //startActivityForResult(myIntent, 0);
                         }
 
                         if (position == 1) {

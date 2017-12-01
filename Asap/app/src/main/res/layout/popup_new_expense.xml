@@ -44,7 +44,7 @@
         android:textColor="#ffffff"
         android:text="Select a Category" />
     <Spinner
-        android:id="@+id/spinner1"
+        android:id="@+id/categoryspinner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textColor="#ffffff"
@@ -58,7 +58,7 @@
         android:textColor="#ffffff"
         android:text="Select a Budget" />
     <Spinner
-        android:id="@+id/spinner2"
+        android:id="@+id/budgetspinner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textColor="#ffffff"
