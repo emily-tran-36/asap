@@ -432,7 +432,7 @@ public class MainActivity extends AppCompatActivity {
 
                 // Create ArrayAdapter using the budget list.
                 ListAdapter budgetAdapter = new ArrayAdapter<String>(getActivity(), R.layout.simplerow, budgetList);
-                ListView mainListView = (ListView) rootView.findViewById( R.id.mainListView );
+                final ListView mainListView = (ListView) rootView.findViewById( R.id.mainListView );
                 mainListView.setAdapter( budgetAdapter );
 
                 mainListView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
@@ -440,7 +440,11 @@ public class MainActivity extends AppCompatActivity {
                                             int position, long id) {
                         if (position == 0) {
                             Intent myIntent = new Intent(view.getContext(), BudgetDetailsActivity.class);
+                            String  budgetName    = (String) mainListView.getItemAtPosition(position);
+
                             myIntent.putExtra("Expense Details", budgetExpenseMap);
+                            myIntent.putExtra("Current Budget", budgetName);
+
                             startActivity(myIntent);
                             //startActivityForResult(myIntent, 0);
                         }
