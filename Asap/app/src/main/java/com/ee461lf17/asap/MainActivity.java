@@ -178,9 +178,28 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         } else if (!isDeviceOnline()) {
             mOutputText.setText("No network connection available.");
         } else {
-            MakeRequestTask debug = new MakeRequestTask(mCredential);
-            Boolean flag = debug.isDriveServiceNull();
-            debug.execute();
+            int request = 0;
+            String oldFileID = "test";
+            String newFileName = "test1";
+            switch (request) {
+                case 0:
+                    MakeRequestTask debug = new MakeRequestTask(mCredential);
+                    Boolean flag = debug.isDriveServiceNull();
+                    debug.execute();
+                    break;
+                case 1:
+                    MakeRequestTaskCopy copy = new MakeRequestTaskCopy(mCredential, oldFileID, newFileName);
+                    break;
+                case 2:
+                    MakeRequestTaskCreate create = new MakeRequestTaskCreate(mCredential, oldFileID, newFileName);
+                    break;
+                case 3:
+                    break;
+                case 4:
+                    break;
+                case 5:
+                    break;
+            }
         }
     }
 
@@ -455,6 +474,145 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         }
     }
 
+    //MRT1
+    private class MakeRequestTaskCopy extends AsyncTask<Void, Void, List<String>> {
+        private com.google.api.services.drive.Drive mService = null;
+        private Exception mLastError = null;
+        private String oldFileID = null;
+        private String newFileName = null;
+        public boolean isDriveServiceNull() {
+            return mService == null;
+        }
+
+        MakeRequestTaskCopy(GoogleAccountCredential credential, String oldFileID, String newFileName) {
+            HttpTransport transport = AndroidHttp.newCompatibleTransport();
+            JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
+            mService = new com.google.api.services.drive.Drive.Builder(
+                    transport, jsonFactory, credential)
+                    .setApplicationName("Drive API Android Quickstart")
+                    .build();
+            this.oldFileID = oldFileID;
+            this.newFileName = newFileName;
+        }
+
+        /**
+         * Background task to call Drive API.
+         * @param params no parameters needed for this task.
+         */
+        @Override
+        protected List<String> doInBackground(Void... params) {
+            try {
+                return getDataFromApi();
+            } catch (Exception e) {
+                mLastError = e;
+                cancel(true);
+                return null;
+            }
+        }
+
+        /**
+         * Fetch a list of up to 10 file names and IDs.
+         * @return List of Strings describing files, or an empty list if no files
+         *         found.
+         * @throws IOException
+         */
+        private List<String> getDataFromApi() throws IOException {
+            // Get a list of up to 10 files.
+            List<String> fileID = new ArrayList<String>();
+            fileID.add(Budgets.copyFile(mService, oldFileID, newFileName).getName());
+            return fileID; //tfw you return a single element list because doInBackground complains
+        }
+
+        @Override
+        protected void onPreExecute() {
+            //mOutputText.setText("");
+            //mProgress.show();
+        }
+
+        @Override
+        protected void onPostExecute(List<String> output) {
+            mProgress.hide();
+            if (output == null || output.size() == 0) {
+                //mOutputText.setText("No results returned.");
+            } else {
+                //output.add(0, "Data retrieved using the Drive API:");
+                //mOutputText.setText(TextUtils.join("\n", output));
+            }
+        }
+    }
+
+    //MRT2
+    private class MakeRequestTaskCreate extends AsyncTask<Void, Void, List<String>> {
+        private com.google.api.services.drive.Drive mService = null;
+        private Exception mLastError = null;
+        private String oldFileID = null;
+        private String newFileName = null;
+        public boolean isDriveServiceNull() {
+            return mService == null;
+        }
+
+        MakeRequestTaskCreate(GoogleAccountCredential credential, String oldFileID, String newFileName) {
+            HttpTransport transport = AndroidHttp.newCompatibleTransport();
+            JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
+            this.oldFileID=oldFileID;
+            this.newFileName=newFileName;
+            mService = new com.google.api.services.drive.Drive.Builder(
+                    transport, jsonFactory, credential)
+                    .setApplicationName("Drive API Android Quickstart")
+                    .build();
+        }
+
+        /**
+         * Background task to call Drive API.
+         * @param params no parameters needed for this task.
+         */
+        @Override
+        protected List<String> doInBackground(Void... params) {
+            try {
+                return getDataFromApi();
+            } catch (Exception e) {
+                mLastError = e;
+                cancel(true);
+                return null;
+            }
+        }
+
+        /**
+         * Fetch a list of up to 10 file names and IDs.
+         * @return List of Strings describing files, or an empty list if no files
+         *         found.
+         * @throws IOException
+         */
+        private List<String> getDataFromApi() throws IOException {
+            // Get a list of up to 10 files.
+            List<String> fileID = new ArrayList<String>();
+            fileID.add(Budgets.createFile(mService, oldFileID, newFileName));
+            return fileID;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            //mOutputText.setText("");
+            //mProgress.show();
+        }
+
+        @Override
+        protected void onPostExecute(List<String> output) {
+            mProgress.hide();
+            if (output == null || output.size() == 0) {
+                //mOutputText.setText("No results returned.");
+            } else {
+                //output.add(0, "Data retrieved using the Drive API:");
+                //mOutputText.setText(TextUtils.join("\n", output));
+            }
+        }
+    }
+
+    //MRT3
+
+    //MRT4
+
+    //MRT5
     /**
      * Checks whether the device currently has a network connection.
      * @return true if the device has a network connection, false otherwise.

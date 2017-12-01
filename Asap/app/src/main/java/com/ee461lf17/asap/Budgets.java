@@ -99,7 +99,7 @@ public class Budgets {
         }
     }
     //copy sheets file
-    private static File copyFile(Drive service, String originFileId,
+    public static File copyFile(Drive service, String originFileId,
                                  String copyTitle) {
         File copiedFile = new File();
         copiedFile.setName(copyTitle);
@@ -111,7 +111,7 @@ public class Budgets {
         return null;
     }
 
-    private static String createFile(Drive service, String originFileID, String copyTitle){
+    public static String createFile(Drive service, String originFileID, String copyTitle){
         File newFile = copyFile(service, originFileID, copyTitle);
         return newFile.getId();
     }
