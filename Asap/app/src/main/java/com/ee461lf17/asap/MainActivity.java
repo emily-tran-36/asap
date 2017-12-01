@@ -128,8 +128,8 @@ public class MainActivity extends AppCompatActivity {
 
                             public void onClick(View arg0) {
 
-                                if(accountsList.contains("There are no accounts yet.")){
-                                    accountsList.remove("There are no accounts yet.");
+                                if(accountsList.contains("No accounts yet.")){
+                                    accountsList.remove("No accounts yet.");
                                 }
                                 accountsList.add(Name.getText().toString());
                                 accountAmountMap.put(Name.getText().toString(), Amount.getText().toString());
@@ -179,8 +179,8 @@ public class MainActivity extends AppCompatActivity {
                         .setOnClickListener(new View.OnClickListener() {
 
                             public void onClick(View arg0) {
-                                if(budgetList.contains("There are no budgets yet.")){
-                                    budgetList.remove("There are no budgets yet.");
+                                if(budgetList.contains("No budgets yet.")){
+                                    budgetList.remove("No budgets yet.");
                                 }
 
                                 budgetList.add(Name.getText().toString());

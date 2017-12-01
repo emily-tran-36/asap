@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Asap</string>
+    <string name="app_name">A$AP</string>
     <string name="action_settings">Settings</string>
     <string name="section_format">Hello World from section: %1$d</string>
     <string name="side_nav_user">Hello PlaceHolderUser</string>
