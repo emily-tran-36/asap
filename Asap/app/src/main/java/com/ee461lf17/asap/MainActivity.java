@@ -56,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
     private NavigationView nvDrawer;
 
     static ArrayList<String> budgetList = new ArrayList<String>();
+    static ArrayList<String> categoriesList = new ArrayList<String>();
     static ArrayList<String> accountsList = new ArrayList<String>();
 
     static HashMap<String, ArrayList<String>> budgetMap = new HashMap<String, ArrayList<String>>();
@@ -90,6 +91,14 @@ public class MainActivity extends AppCompatActivity {
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
+
+        categoriesList.add("Rent & Utilities");
+        categoriesList.add("Food");
+        categoriesList.add("Groceries");
+        categoriesList.add("Shopping");
+        categoriesList.add("Entertainment");
+        categoriesList.add("Investment");
+        categoriesList.add("Other");
 
         com.github.clans.fab.FloatingActionButton account = (com.github.clans.fab.FloatingActionButton) findViewById(R.id.fabAccount);
         account.setOnClickListener(new View.OnClickListener(){
@@ -140,10 +149,16 @@ public class MainActivity extends AppCompatActivity {
                 View layout = inflater.inflate(R.layout.activity_main,null);
                 View popupLayout = inflater.inflate(R.layout.popup_new_budget,null);
                 float density = MainActivity.this.getResources().getDisplayMetrics().density;
-                final PopupWindow popup = new PopupWindow(popupLayout, (int)density*240, (int)density*240, true);
+                final PopupWindow popup = new PopupWindow(popupLayout, (int)density*300, (int)density*310, true);
                 //PopupWindow popup = new PopupWindow((int)density*240, (int)density*285);
                 popup.showAtLocation(layout, Gravity.CENTER, 0, 0);
 
+                Spinner accounts = popupLayout.findViewById(R.id.spinner4);
+                String[] accNames = accountsList.toArray(new String[0]);
+                ArrayAdapter<String> accAdapter = new ArrayAdapter<String>(MainActivity.this,
+                        R.layout.spinner_item, accNames);
+                accAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                accounts.setAdapter(accAdapter);
 
                 final EditText Name = (EditText) popupLayout.findViewById(R.id.newBudgetName);
 
@@ -185,10 +200,16 @@ public class MainActivity extends AppCompatActivity {
                 View layout = inflater.inflate(R.layout.activity_main,null);
                 View popupLayout = inflater.inflate(R.layout.popup_new_expense,null);
                 float density = MainActivity.this.getResources().getDisplayMetrics().density;
-                final PopupWindow popup = new PopupWindow(popupLayout, (int)density*240, (int)density*285, true);
+                final PopupWindow popup = new PopupWindow(popupLayout, (int)density*300, (int)density*380, true);
                 //PopupWindow popup = new PopupWindow((int)density*240, (int)density*285);
                 popup.showAtLocation(layout, Gravity.CENTER, 0, 0);
 
+                Spinner categories = popupLayout.findViewById(R.id.spinner1);
+                String[] catNames = categoriesList.toArray(new String[0]);
+                ArrayAdapter<String> catAdapter = new ArrayAdapter<String>(MainActivity.this,
+                        R.layout.spinner_item, catNames);
+                catAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                categories.setAdapter(catAdapter);
 
                 Spinner budgets = popupLayout.findViewById(R.id.spinner2);
                 String[] budgetNames = budgetList.toArray(new String[0]);
@@ -230,7 +251,58 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        com.github.clans.fab.FloatingActionButton income = (com.github.clans.fab.FloatingActionButton) findViewById(R.id.fabIncome);
+        income.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view){
+                LayoutInflater inflater = (LayoutInflater) MainActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                View layout = inflater.inflate(R.layout.activity_main,null);
+                View popupLayout = inflater.inflate(R.layout.popup_new_income,null);
+                float density = MainActivity.this.getResources().getDisplayMetrics().density;
+                final PopupWindow popup = new PopupWindow(popupLayout, (int)density*300, (int)density*310, true);
+                //PopupWindow popup = new PopupWindow((int)density*240, (int)density*285);
+                popup.showAtLocation(layout, Gravity.CENTER, 0, 0);
 
+                Spinner accounts = popupLayout.findViewById(R.id.spinner3);
+                String[] accNames = accountsList.toArray(new String[0]);
+                ArrayAdapter<String> accAdapter = new ArrayAdapter<String>(MainActivity.this,
+                        R.layout.spinner_item, accNames);
+                accAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                accounts.setAdapter(accAdapter);
+
+
+                final EditText Name = (EditText) popupLayout.findViewById(R.id.newIncomeName);
+                final EditText Amount = (EditText) popupLayout.findViewById(R.id.newIncomeAmount);
+
+                ((Button) popupLayout.findViewById(R.id.confirm_new_income))
+                        .setOnClickListener(new View.OnClickListener() {
+
+                            public void onClick(View arg0) {
+                                //budgetList.add(Name.getText().toString());
+
+//                                ArrayList<String> tempList = new ArrayList<String>();
+//                                tempList.add("Test1");
+//                                tempList.add("Test2");
+
+                                //budgetMap.put(Name.getText().toString(),tempList);
+
+                                popup.dismiss();
+
+                            }
+
+                        });
+
+                ((Button) popupLayout.findViewById(R.id.cancel_new_income))
+                        .setOnClickListener(new View.OnClickListener() {
+
+                            public void onClick(View arg0) {
+                                popup.dismiss();
+
+                            }
+
+                        });
+            }
+        });
 
 
     }
