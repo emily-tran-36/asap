@@ -25,8 +25,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListAdapter;
-import android.view.View.OnClickListener;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.Spinner;
@@ -34,6 +32,7 @@ import android.widget.Spinner;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -58,8 +57,16 @@ public class MainActivity extends AppCompatActivity {
     static ArrayList<String> budgetList = new ArrayList<String>();
     static ArrayList<String> accountsList = new ArrayList<String>();
 
-    static HashMap<String, ArrayList<String>> budgetMap = new HashMap<String, ArrayList<String>>();
-    static HashMap<String, String> accountsMap = new HashMap<String, String>();
+    static HashMap<String, String> budgetAmountMap = new HashMap<String, String>();
+    static HashMap<String, String> accountAmountMap = new HashMap<String, String>();
+    static HashMap<String, List<String>> expenseMap = new HashMap<String, List<String>>();
+
+
+    static HashMap<String, List<String>> budgetExpenseMap = new HashMap<String, List<String>>();
+    static HashMap<String, String> budgetAccountMap = new HashMap<String, String>();
+
+
+
 
 
     @Override
@@ -112,8 +119,11 @@ public class MainActivity extends AppCompatActivity {
 
                             public void onClick(View arg0) {
 
-                                //accountsMap.put(Name.getText().toString(), Amount.getText().toString());
+                                if(accountsList.contains("There are no accounts yet.")){
+                                    accountsList.remove("There are no accounts yet.");
+                                }
                                 accountsList.add(Name.getText().toString());
+                                accountAmountMap.put(Name.getText().toString(), Amount.getText().toString());
 
                                 popup.dismiss();
 
@@ -146,12 +156,20 @@ public class MainActivity extends AppCompatActivity {
 
 
                 final EditText Name = (EditText) popupLayout.findViewById(R.id.newBudgetName);
+                final EditText Amount = (EditText) popupLayout.findViewById(R.id.newBudgetAmount);
+
 
                 ((Button) popupLayout.findViewById(R.id.confirm_new_budget))
                         .setOnClickListener(new View.OnClickListener() {
 
                             public void onClick(View arg0) {
+                                if(budgetList.contains("There are no budgets yet.")){
+                                    budgetList.remove("There are no budgets yet.");
+                                }
                                 budgetList.add(Name.getText().toString());
+
+                                budgetList.add(Name.getText().toString());
+                                budgetAmountMap.put(Name.getText().toString(), Amount.getText().toString());
 
 //                                ArrayList<String> tempList = new ArrayList<String>();
 //                                tempList.add("Test1");
@@ -199,6 +217,8 @@ public class MainActivity extends AppCompatActivity {
 
                 final EditText Name = (EditText) popupLayout.findViewById(R.id.newExpenseName);
                 final EditText Amount = (EditText) popupLayout.findViewById(R.id.newExpenseAmount);
+                final Spinner Budget = (Spinner) popupLayout.findViewById(R.id.spinner2);
+                final String budgetText = Budget.getSelectedItem().toString();
 
                 ((Button) popupLayout.findViewById(R.id.confirm_new_expense))
                         .setOnClickListener(new View.OnClickListener() {
@@ -206,11 +226,11 @@ public class MainActivity extends AppCompatActivity {
                             public void onClick(View arg0) {
                                 //budgetList.add(Name.getText().toString());
 
-//                                ArrayList<String> tempList = new ArrayList<String>();
-//                                tempList.add("Test1");
-//                                tempList.add("Test2");
+                                ArrayList<String> tempList = new ArrayList<String>();
+                                tempList.add(Amount.getText().toString());
+                                tempList.add(budgetText);
 
-                                //budgetMap.put(Name.getText().toString(),tempList);
+                                expenseMap.put(Name.getText().toString(),tempList);
 
                                 popup.dismiss();
 
@@ -327,8 +347,7 @@ public class MainActivity extends AppCompatActivity {
             int viewNumber = getArguments().getInt(ARG_SECTION_NUMBER);
             if(viewNumber == 1){
                 //Budget List
-                String[] budgets = new String[] { "Monthy", "Fun", "House"};
-                budgetList.addAll( Arrays.asList(budgets) );
+                String[] budgets = new String[] { "There are no budgets yet."};
 //                Set<String> budgets = budgetMap.keySet();
 //                for(String s: budgets){
 //                    budgetList.add(s);
@@ -357,23 +376,13 @@ public class MainActivity extends AppCompatActivity {
                             Intent myIntent = new Intent(view.getContext(), BudgetDetailsActivity.class);
                             startActivityForResult(myIntent, 0);
                         }
-
-                        if (position == 3) {
-                            Intent myIntent = new Intent(view.getContext(), BudgetDetailsActivity.class);
-                            startActivityForResult(myIntent, 0);
-                        }
-
-                        if (position == 4) {
-                            Intent myIntent = new Intent(view.getContext(), BudgetDetailsActivity.class);
-                            startActivityForResult(myIntent, 0);
-                        }
                     }
                 });
 
 
             }
             else if(viewNumber == 2){
-                String[] accounts = new String[] { "Checking", "Personal Checking"};
+                String[] accounts = new String[] { "There are no accounts yet."};
                 accountsList.addAll( Arrays.asList(accounts) );
                 // Create ArrayAdapter using the budget list.
                 ListAdapter listAdapter = new ArrayAdapter<String>(getActivity(), R.layout.simplerow, accountsList);
