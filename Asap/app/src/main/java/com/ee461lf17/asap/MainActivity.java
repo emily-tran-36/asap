@@ -159,7 +159,7 @@ public class MainActivity extends AppCompatActivity {
                 View layout = inflater.inflate(R.layout.activity_main,null);
                 View popupLayout = inflater.inflate(R.layout.popup_new_budget,null);
                 float density = MainActivity.this.getResources().getDisplayMetrics().density;
-                final PopupWindow popup = new PopupWindow(popupLayout, (int)density*300, (int)density*310, true);
+                final PopupWindow popup = new PopupWindow(popupLayout, (int)density*300, (int)density*380, true);
                 //PopupWindow popup = new PopupWindow((int)density*240, (int)density*285);
                 popup.showAtLocation(layout, Gravity.CENTER, 0, 0);
 
@@ -173,6 +173,7 @@ public class MainActivity extends AppCompatActivity {
                 final EditText Name = (EditText) popupLayout.findViewById(R.id.newBudgetName);
                 final EditText Amount = (EditText) popupLayout.findViewById(R.id.newBudgetAmount);
 
+                final EditText Emails = (EditText) popupLayout.findViewById(R.id.newEmails);
 
                 ((Button) popupLayout.findViewById(R.id.confirm_new_budget))
                         .setOnClickListener(new View.OnClickListener() {
