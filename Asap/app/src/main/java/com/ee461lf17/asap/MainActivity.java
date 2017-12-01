@@ -424,7 +424,7 @@ public class MainActivity extends AppCompatActivity {
             int viewNumber = getArguments().getInt(ARG_SECTION_NUMBER);
             if(viewNumber == 1){
                 //Budget List
-                String[] budgets = new String[] { "There are no budgets yet."};
+                String[] budgets = new String[] { "No budgets yet."};
 //                Set<String> budgets = budgetMap.keySet();
 //                for(String s: budgets){
 //                    budgetList.add(s);
@@ -465,7 +465,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
             else if(viewNumber == 2){
-                String[] accounts = new String[] { "There are no accounts yet."};
+                String[] accounts = new String[] { "No accounts yet."};
                 accountsList.addAll( Arrays.asList(accounts) );
                 // Create ArrayAdapter using the budget list.
                 ListAdapter listAdapter = new ArrayAdapter<String>(getActivity(), R.layout.simplerow, accountsList);
