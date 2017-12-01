@@ -96,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 .setBackOff(new ExponentialBackOff());
         promptUserToChooseAccount();
         // Initialize credentials and service object.
-
+        Budgets.addMoneyToAccount(this, mCredential, "1uXfaPQTZCymjI5wClQb0hy-GKj0KctFHYfWduwEm4WE",306,"testing","11/30/2017");
     }
     //Will ensure google play services are installed and up-to-date
     //Then prompts the user to log into their google account and stores their credentials
