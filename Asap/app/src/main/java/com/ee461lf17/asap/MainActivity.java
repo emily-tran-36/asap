@@ -3,9 +3,13 @@ package com.ee461lf17.asap;
 import android.Manifest;
 import android.accounts.AccountManager;
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
@@ -18,20 +22,31 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.text.method.ScrollingMovementMethod;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
+import com.google.api.client.http.HttpTransport;
+import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.ExponentialBackOff;
+import com.google.api.services.drive.model.File;
+import com.google.api.services.drive.model.FileList;
 import com.google.api.services.sheets.v4.SheetsScopes;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -45,10 +60,13 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     static final int REQUEST_AUTHORIZATION = 1001;
     static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
     static final int REQUEST_PERMISSION_GET_ACCOUNTS = 1003;
+    private Button mCallApiButton;
+    ProgressDialog mProgress;
 
     //permissions required for Google Sheets access
     private static final String[] SCOPES = { SheetsScopes.SPREADSHEETS };
     private static final String PREF_ACCOUNT_NAME = "accountName";
+    private static final String BUTTON_TEXT = "Call Drive API";
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
      * fragments for each of the sections. We use a
@@ -86,17 +104,18 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                Snackbar.make(view, "Running getResultsFromApi", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
+                getResultsFromApi();
             }
         });
 
         mCredential = GoogleAccountCredential.usingOAuth2(
                 getApplicationContext(), Arrays.asList(SCOPES))
                 .setBackOff(new ExponentialBackOff());
-        promptUserToChooseAccount();
+        //promptUserToChooseAccount();
         // Initialize credentials and service object.
-        Budgets.addMoneyToAccount(this, mCredential, "1uXfaPQTZCymjI5wClQb0hy-GKj0KctFHYfWduwEm4WE",306,"testing","11/30/2017");
+        //Budgets.addMoneyToAccount(this, mCredential, "1uXfaPQTZCymjI5wClQb0hy-GKj0KctFHYfWduwEm4WE",306,"testing","11/30/2017");
     }
     //Will ensure google play services are installed and up-to-date
     //Then prompts the user to log into their google account and stores their credentials
@@ -140,6 +159,28 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             startActivityForResult(
                     mCredential.newChooseAccountIntent(),
                     REQUEST_ACCOUNT_PICKER);
+        }
+    }
+
+
+    /**
+     * Attempt to call the API, after verifying that all the preconditions are
+     * satisfied. The preconditions are: Google Play Services installed, an
+     * account was selected and the device currently has online access. If any
+     * of the preconditions are not satisfied, the app will prompt the user as
+     * appropriate.
+     */
+    private void getResultsFromApi() {
+        if (!isGooglePlayServicesAvailable()) {
+            acquireGooglePlayServices();
+        } else if (mCredential.getSelectedAccountName() == null) {
+            chooseAccount();
+        } else if (!isDeviceOnline()) {
+            mOutputText.setText("No network connection available.");
+        } else {
+            MakeRequestTask debug = new MakeRequestTask(mCredential);
+            Boolean flag = debug.isDriveServiceNull();
+            debug.execute();
         }
     }
 
@@ -329,15 +370,104 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                     }
                 }
                 break;
-//            case REQUEST_AUTHORIZATION:
-//                if (resultCode == RESULT_OK) {
-//                    getResultsFromApi();
-//                }
-//                break;
+            case REQUEST_AUTHORIZATION:
+                if (resultCode == RESULT_OK) {
+                    getResultsFromApi();
+                }
+                break;
         }
     }
 
     /**
+     * An asynchronous task that handles the Drive API call.
+     * Placing the API calls in their own task ensures the UI stays responsive.
+     */
+    private class MakeRequestTask extends AsyncTask<Void, Void, List<String>> {
+        private com.google.api.services.drive.Drive mService = null;
+        private Exception mLastError = null;
+
+        public boolean isDriveServiceNull() {
+            return mService == null;
+        }
+
+        MakeRequestTask(GoogleAccountCredential credential) {
+            HttpTransport transport = AndroidHttp.newCompatibleTransport();
+            JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
+            mService = new com.google.api.services.drive.Drive.Builder(
+                    transport, jsonFactory, credential)
+                    .setApplicationName("Drive API Android Quickstart")
+                    .build();
+        }
+
+        /**
+         * Background task to call Drive API.
+         * @param params no parameters needed for this task.
+         */
+        @Override
+        protected List<String> doInBackground(Void... params) {
+            try {
+                return getDataFromApi();
+            } catch (Exception e) {
+                mLastError = e;
+                cancel(true);
+                return null;
+            }
+        }
+
+        /**
+         * Fetch a list of up to 10 file names and IDs.
+         * @return List of Strings describing files, or an empty list if no files
+         *         found.
+         * @throws IOException
+         */
+        private List<String> getDataFromApi() throws IOException {
+            // Get a list of up to 10 files.
+            List<String> fileInfo = new ArrayList<String>();
+            FileList result = mService.files().list()
+                    .setPageSize(10)
+                    .setFields("nextPageToken, files(id, name)")
+                    .execute();
+            List<File> files = result.getFiles();
+            if (files != null) {
+                for (File file : files) {
+                    fileInfo.add(String.format("%s (%s)\n",
+                            file.getName(), file.getId()));
+                }
+            }
+            return fileInfo;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            //mOutputText.setText("");
+            //mProgress.show();
+        }
+
+        @Override
+        protected void onPostExecute(List<String> output) {
+            mProgress.hide();
+            if (output == null || output.size() == 0) {
+                //mOutputText.setText("No results returned.");
+            } else {
+                //output.add(0, "Data retrieved using the Drive API:");
+                //mOutputText.setText(TextUtils.join("\n", output));
+            }
+        }
+    }
+
+    /**
+     * Checks whether the device currently has a network connection.
+     * @return true if the device has a network connection, false otherwise.
+     */
+    private boolean isDeviceOnline() {
+        ConnectivityManager connMgr =
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+        return (networkInfo != null && networkInfo.isConnected());
+    }
+
+
+        /**
      * Respond to requests for permissions at runtime for API 23 and above.
      * @param requestCode The request code passed in
      *     requestPermissions(android.app.Activity, String, int, String[])

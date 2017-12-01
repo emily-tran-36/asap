@@ -29,6 +29,7 @@ dependencies {
     })
     compile 'com.android.support:appcompat-v7:26.+'
     compile 'com.android.support:design:26.+'
+
     compile 'com.google.api-client:google-api-client:1.23.0'
     compile 'com.google.apis:google-api-services-drive:v3-rev90-1.23.0'
     compile 'pub.devrel:easypermissions:0.3.0'
