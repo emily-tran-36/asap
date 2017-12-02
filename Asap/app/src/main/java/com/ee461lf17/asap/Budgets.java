@@ -40,8 +40,8 @@ public class Budgets {
 
     private GoogleAccountCredential credential;
 
-    private final String accountName;
-    private final String masterSheetID;
+    private String userName;
+    private String masterSheetID;
     private List<String> templateIDs = new ArrayList<>();
     private List<String> accountIDs = new ArrayList<>();
     private List<String> accountNames = new ArrayList<>();
@@ -49,16 +49,30 @@ public class Budgets {
     private List<String> budgetNames = new ArrayList<>();
     private List<String> budgetIDs = new ArrayList<>();
 
-    public Budgets(GoogleAccountCredential mCredential, Activity callingActivity) {
-        credential = mCredential;
-        //addExpenditure(callingActivity, credential, "1Vl9m-oPg0w4QmXz-29POvEN7FHCl34feXvGqWplpDHw","Shit", 2222, "bullshit", "12/01/2017");
-        while(mCredential.getSelectedAccountName() == null) {}
-        accountName = mCredential.getSelectedAccountName().toLowerCase();
-        masterSheetID = getMasterIDFromSheet(callingActivity);
-        //updateTemplateBudgetNameAccountIDs(callingActivity);
-        System.out.println("Initialization finished");
+    //Boolean flag to indicate if the class is properly initialized or still updating.
+    private Boolean isReady = false;
+
+
+    public Budgets(GoogleAccountCredential mCredential, final Activity callingActivity) {
+        credential = mCredential; //Quick assignment can run in the main thread
+
+        //Complicated stuff has to run on separate thread.
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while(credential.getSelectedAccountName() == null) {}
+                userName = credential.getSelectedAccountName().toLowerCase();
+                masterSheetID = getMasterIDFromSheet(callingActivity);
+                updateTemplateBudgetNameAccountIDs(callingActivity);
+                isReady = true;
+
+            }
+        }).start();
     }
-    //Pre: Account credential, accountName, and masterID are set
+    public boolean isReady() {
+        return isReady;
+    }
+    //Pre: Account credential, userName, and masterID are set
     private void updateTemplateBudgetNameAccountIDs(Activity callingActivity){
         try {
             Sheets sheetsService = createSheetsService(credential);
@@ -68,7 +82,7 @@ public class Budgets {
             List<List<Object>> list = f.get();
             for(int i = 1; i < list.size(); ++i) {
                 List<Object> l = list.get(i);
-                if(1 < list.size() && !l.get(0).equals("") && !l.get(1).equals("")){
+                if(1 < l.size() && !l.get(0).equals("") && !l.get(1).equals("")){
                     String budgetSummaryID = (String)l.get(1);
                     sheetsService = createSheetsService(credential);
                     request = sheetsService.spreadsheets().values().get(budgetSummaryID, "b2:b");
@@ -85,7 +99,7 @@ public class Budgets {
                     String budgetName = (String)l.get(0);
                     budgetNames.add(budgetName);
                 }
-                if(3 < list.size() && !l.get(2).equals("") && !l.get(3).equals("")) {
+                if(3 < l.size() && !l.get(2).equals("") && !l.get(3).equals("")) {
                     String accountName = (String)l.get(2);
                     accountNames.add(accountName);
                     String accountID = (String)l.get(3);
@@ -98,7 +112,7 @@ public class Budgets {
             System.out.println("something went wrong " + e);
         }
     }
-    //Pre: Account credential and accountName are set
+    //Pre: Account credential and userName are set
     private String getMasterIDFromSheet(Activity callingActivity) {
         try {
             Sheets sheetsService = createSheetsService(credential);
@@ -108,9 +122,9 @@ public class Budgets {
             List<List<Object>> list = f.get();
             for(List<Object> l: list) {
                 String comp = (String)l.get(0);
-                if(comp.toLowerCase().equals(accountName.toLowerCase())){
+                if(comp.toLowerCase().equals(userName.toLowerCase())){
                     if(l.size() < 2){
-                        return createNewMasterSheetFor(accountName);
+                        return createNewMasterSheetFor(userName);
                     }
                     else {
                         return (String)(l.get(1));
@@ -121,7 +135,7 @@ public class Budgets {
             System.out.println("Something went wrong " + e);
             return null;
         }
-        return createNewMasterSheetFor(accountName);
+        return createNewMasterSheetFor(userName);
     }
 
     //Will add account name to the home sheet, then create a new, empty master sheet,
