@@ -191,7 +191,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
                 final EditText Name = (EditText) popupLayout.findViewById(R.id.newBudgetName);
                 final EditText Amount = (EditText) popupLayout.findViewById(R.id.newBudgetAmount);
-
                 final EditText Emails = (EditText) popupLayout.findViewById(R.id.newEmails);
 
                 ((Button) popupLayout.findViewById(R.id.confirm_new_budget))
@@ -204,13 +203,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
                                 budgetList.add(Name.getText().toString());
                                 budgetAmountMap.put(Name.getText().toString(), Amount.getText().toString());
-
-//                                ArrayList<String> tempList = new ArrayList<String>();
-//                                tempList.add("Test1");
-//                                tempList.add("Test2");
-
-                                //budgetMap.put(Name.getText().toString(),tempList);
-
                                 popup.dismiss();
 
                             }
@@ -515,10 +507,11 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 final ListView mainListView = (ListView) rootView.findViewById( R.id.mainListView );
                 mainListView.setAdapter( budgetAdapter );
 
+                //click on list item
                 mainListView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
                     public void onItemClick(AdapterView<?> parent, View view,
                                             int position, long id) {
-                        if (position == 0) {
+                        //if (position == 0) {
                             Intent myIntent = new Intent(view.getContext(), BudgetDetailsActivity.class);
                             String  budgetName    = (String) mainListView.getItemAtPosition(position);
 
@@ -527,17 +520,15 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
                             startActivity(myIntent);
                             //startActivityForResult(myIntent, 0);
-                        }
-
-                        if (position == 1) {
-                            Intent myIntent = new Intent(view.getContext(), BudgetDetailsActivity.class);
-                            startActivityForResult(myIntent, 0);
-                        }
-
-                        if (position == 2) {
-                            Intent myIntent = new Intent(view.getContext(), BudgetDetailsActivity.class);
-                            startActivityForResult(myIntent, 0);
-                        }
+                       // }
+//                        if (position == 1) {
+//                            Intent myIntent = new Intent(view.getContext(), BudgetDetailsActivity.class);
+//                            startActivityForResult(myIntent, 0);
+//                        }
+//                        if (position == 2) {
+//                            Intent myIntent = new Intent(view.getContext(), BudgetDetailsActivity.class);
+//                            startActivityForResult(myIntent, 0);
+//                        }
                     }
                 });
 
@@ -547,9 +538,34 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 String[] accounts = new String[] { "No accounts yet."};
                 accountsList.addAll( Arrays.asList(accounts) );
                 // Create ArrayAdapter using the budget list.
-                ListAdapter listAdapter = new ArrayAdapter<String>(getActivity(), R.layout.simplerow, accountsList);
-                ListView mainListView = (ListView) rootView.findViewById( R.id.mainListView );
-                mainListView.setAdapter( listAdapter );
+                ListAdapter accountAdapter = new ArrayAdapter<String>(getActivity(), R.layout.simplerow, accountsList);
+                final ListView mainListView = (ListView) rootView.findViewById( R.id.mainListView );
+                mainListView.setAdapter( accountAdapter );
+
+                //click on list item
+//                mainListView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+//                    public void onItemClick(AdapterView<?> parent, View view,
+//                                            int position, long id) {
+//                        if (position == 0) {
+////                            Intent myIntent = new Intent(view.getContext(), BudgetDetailsActivity.class);
+////                            String  accountName    = (String) mainListView.getItemAtPosition(position);
+////
+////                            myIntent.putExtra("Expense Details", budgetExpenseMap);
+////                            myIntent.putExtra("Current Budget", accountName);
+//
+//                            startActivity(myIntent);
+//                            //startActivityForResult(myIntent, 0);
+//                        }
+//                        if (position == 1) {
+//                            Intent myIntent = new Intent(view.getContext(), BudgetDetailsActivity.class);
+//                            startActivityForResult(myIntent, 0);
+//                        }
+//                        if (position == 2) {
+//                            Intent myIntent = new Intent(view.getContext(), BudgetDetailsActivity.class);
+//                            startActivityForResult(myIntent, 0);
+//                        }
+//                    }
+//                });
 
 
             }
