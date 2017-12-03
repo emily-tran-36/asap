@@ -45,7 +45,6 @@ public class Budgets {
     private static final ExecutorService executor = Executors.newFixedThreadPool(1);
 
     private GoogleAccountCredential credential;
-    private Activity callingActivity;
 
     private String userName;
     private String masterSheetID;
@@ -278,9 +277,9 @@ public class Budgets {
     }
 
 
-    public void addUserToBudget(String email) {
+    public void addUserToBudget(Activity callingActivity, String email) {
 
-        AddUserToBudgetTask task = new AddUserToBudgetTask(credential, email);
+        AddUserToBudgetTask task = new AddUserToBudgetTask(credential, callingActivity, email);
         task.execute();
     }
 
@@ -292,9 +291,11 @@ public class Budgets {
         private com.google.api.services.drive.Drive mService = null;
         private Exception mLastError = null;
         private String emailToAdd;
+        private Activity callingActivity;
 
-        AddUserToBudgetTask(GoogleAccountCredential credential, String emailToAdd) {
+        AddUserToBudgetTask(GoogleAccountCredential credential, Activity callingActivity, String emailToAdd) {
             this.emailToAdd = emailToAdd;
+            this.callingActivity = callingActivity;
             HttpTransport transport = AndroidHttp.newCompatibleTransport();
             JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
             mService = new com.google.api.services.drive.Drive.Builder(
