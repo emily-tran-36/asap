@@ -40,6 +40,12 @@ import android.widget.PopupWindow;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.github.mikephil.charting.charts.PieChart;
+import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.PieData;
+import com.github.mikephil.charting.data.PieDataSet;
+import com.github.mikephil.charting.utils.ColorTemplate;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.api.client.extensions.android.http.AndroidHttp;
@@ -94,20 +100,29 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private DrawerLayout mDrawer;
     private NavigationView nvDrawer;
 
+    //dashboard variables
+    static PieChart pieChart ;
+    static PieDataSet pieDataSet ;
+    static PieData pieData ;
+    static ArrayList<Entry> entries ;
+    static ArrayList<String> PieEntryLabels ;
+
+
+
     static ArrayList<String> budgetList = new ArrayList<String>();
     static ArrayList<String> categoriesList = new ArrayList<String>();
     static ArrayList<String> accountsList = new ArrayList<String>();
 
     static HashMap<String, String> budgetAmountMap = new HashMap<String, String>();
+    static HashMap<String, String> budgetAccountMap = new HashMap<String, String>();
+
     static HashMap<String, String> accountAmountMap = new HashMap<String, String>();
     //static HashMap<String, List<String>> expenseMap = new HashMap<String, List<String>>();
 
 
     static HashMap<String, HashMap<String, List<String>>> budgetExpenseMap = new HashMap<String, HashMap<String, List<String>>>();
-    static HashMap<String, String> budgetAccountMap = new HashMap<String, String>();
 
-
-
+    private static String TAG = "MainActivity";
 
 
     @Override
@@ -176,6 +191,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                                 if(accountsList.contains("No accounts yet.")){
                                     accountsList.remove("No accounts yet.");
                                 }
+
                                 accountsList.add(Name.getText().toString());
                                 accountAmountMap.put(Name.getText().toString(), Amount.getText().toString());
 
@@ -231,6 +247,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                                 final String accountsText = accounts.getSelectedItem().toString();
 
                                 budgetList.add(Name.getText().toString());
+
+                                budgetAccountMap.put(Name.getText().toString(), accountsText);
                                 budgetAmountMap.put(Name.getText().toString(), Amount.getText().toString());
                                 popup.dismiss();
 
@@ -243,9 +261,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
                             public void onClick(View arg0) {
                                 popup.dismiss();
-
                             }
-
                         });
             }
         });
@@ -348,6 +364,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                             public void onClick(View arg0) {
 
                                 String accountsText = accounts.getSelectedItem().toString();
+
+                                
                                 //budgetList.add(Name.getText().toString());
 
 //                                ArrayList<String> tempList = new ArrayList<String>();
@@ -565,7 +583,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
+
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+            View chartView = inflater.inflate(R.layout.piechart_main, container, false);
             //TextView textView = (TextView) rootView.findViewById(R.id.section_label);
             //textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));
 
@@ -590,7 +610,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 mainListView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
                     public void onItemClick(AdapterView<?> parent, View view,
                                             int position, long id) {
-                        //if (position == 0) {
                             Intent myIntent = new Intent(view.getContext(), BudgetDetailsActivity.class);
                             String  budgetName    = (String) mainListView.getItemAtPosition(position);
 
@@ -598,19 +617,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                             myIntent.putExtra("Current Budget", budgetName);
 
                             startActivity(myIntent);
-                            //startActivityForResult(myIntent, 0);
-                       // }
-//                        if (position == 1) {
-//                            Intent myIntent = new Intent(view.getContext(), BudgetDetailsActivity.class);
-//                            startActivityForResult(myIntent, 0);
-//                        }
-//                        if (position == 2) {
-//                            Intent myIntent = new Intent(view.getContext(), BudgetDetailsActivity.class);
-//                            startActivityForResult(myIntent, 0);
-//                        }
                     }
                 });
-
+                return rootView;
 
             }
             else if(viewNumber == 2){
@@ -620,41 +629,51 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 }
 
                 // Create ArrayAdapter using the budget list.
-                ListAdapter accountAdapter = new ArrayAdapter<String>(getActivity(), R.layout.simplerow, accountsList);
+                ListAdapter listAdapter = new ArrayAdapter<String>(getActivity(), R.layout.simplerow, accountsList);
                 final ListView mainListView = (ListView) rootView.findViewById( R.id.mainListView );
-                mainListView.setAdapter( accountAdapter );
+                mainListView.setAdapter( listAdapter );
 
                 //click on list item
-//                mainListView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
-//                    public void onItemClick(AdapterView<?> parent, View view,
-//                                            int position, long id) {
-//                        if (position == 0) {
-////                            Intent myIntent = new Intent(view.getContext(), BudgetDetailsActivity.class);
-////                            String  accountName    = (String) mainListView.getItemAtPosition(position);
-////
-////                            myIntent.putExtra("Expense Details", budgetExpenseMap);
-////                            myIntent.putExtra("Current Budget", accountName);
-//
-//                            startActivity(myIntent);
-//                            //startActivityForResult(myIntent, 0);
-//                        }
-//                        if (position == 1) {
-//                            Intent myIntent = new Intent(view.getContext(), BudgetDetailsActivity.class);
-//                            startActivityForResult(myIntent, 0);
-//                        }
-//                        if (position == 2) {
-//                            Intent myIntent = new Intent(view.getContext(), BudgetDetailsActivity.class);
-//                            startActivityForResult(myIntent, 0);
-//                        }
-//                    }
-//                });
+                mainListView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+                    public void onItemClick(AdapterView<?> parent, View view,
+                                            int position, long id) {
 
+                            Intent myIntent = new Intent(view.getContext(), AccountDetailsActivity.class);
+                            String  accountName    = (String) mainListView.getItemAtPosition(position);
+
+//                            myIntent.putExtra("Expense Details", budgetExpenseMap);
+//                            myIntent.putExtra("Current Budget", accountName);
+
+                            startActivity(myIntent);
+
+                    }
+                });
+
+                return rootView;
 
             }
-            else{
-                
+            else {
+
+                pieChart = (PieChart) chartView.findViewById(R.id.chart1);
+                entries = new ArrayList<>();
+
+                PieEntryLabels = new ArrayList<String>();
+
+                AddValuesToPIEENTRY();
+
+                AddValuesToPieEntryLabels();
+
+                pieDataSet = new PieDataSet(entries, "");
+
+                pieData = new PieData(PieEntryLabels, pieDataSet);
+
+                pieDataSet.setColors(ColorTemplate.COLORFUL_COLORS);
+
+                pieChart.setData(pieData);
+
+                pieChart.animateY(5000);
+                return chartView;
             }
-            return rootView;
         }
     }
 
@@ -739,6 +758,28 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 connectionStatusCode,
                 REQUEST_GOOGLE_PLAY_SERVICES);
         dialog.show();
+    }
+
+    static public void AddValuesToPIEENTRY(){
+
+        entries.add(new BarEntry(2f, 0));
+        entries.add(new BarEntry(4f, 1));
+        entries.add(new BarEntry(6f, 2));
+        entries.add(new BarEntry(8f, 3));
+        entries.add(new BarEntry(7f, 4));
+        entries.add(new BarEntry(3f, 5));
+
+    }
+
+    static public void AddValuesToPieEntryLabels(){
+
+        PieEntryLabels.add("January");
+        PieEntryLabels.add("February");
+        PieEntryLabels.add("March");
+        PieEntryLabels.add("April");
+        PieEntryLabels.add("May");
+        PieEntryLabels.add("June");
+
     }
 
     /**

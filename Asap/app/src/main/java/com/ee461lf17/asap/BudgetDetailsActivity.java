@@ -27,24 +27,12 @@ public class BudgetDetailsActivity extends AppCompatActivity {
         TableLayout tableLayout = (TableLayout) findViewById(R.id.budgetDetailTable);
         tableLayout.setStretchAllColumns(true);
 
-
         Set<String> expensesKeySet =  budgetDetailsPassed.keySet();
         for(String s: expensesKeySet){
             HashMap<String, List<String>> curExpense =  budgetDetailsPassed.get(s);
             List<String> curDetails = curExpense.get(s);
             String curBudget = curDetails.get(2);
             if(curBudget.equals(budgetNamePassed)){
-//                String data1 = curDetails.get(0);
-//                String data2 = curDetails.get(1);
-//                TextView textView1 = (TextView) findViewById(R.id.textView6);
-//                TextView textView2 = (TextView) findViewById(R.id.textView7);
-//                TextView textView3 = (TextView) findViewById(R.id.textView8);
-//                TextView textView4 = (TextView) findViewById(R.id.textView9);
-//
-//                textView1.setText(s);
-//                textView2.setText(curDetails.get(0));
-//                textView3.setText(curDetails.get(1));
-//                textView4.setText(curDetails.get(2));
                 TextView textView = new TextView(this);
                 TextView textView1 = new TextView(this);
                 TextView textView2 = new TextView(this);
@@ -83,9 +71,6 @@ public class BudgetDetailsActivity extends AppCompatActivity {
             }
 
         }
-//        linearLayout.addView(tableLayout);
-
-
     }
 
 
