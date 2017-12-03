@@ -192,12 +192,12 @@ public class Budgets {
         }
     }
     //copy sheets file
-    public static File copyFile(Drive service, String originFileId,
+    public static String copyFile(Drive service, String originFileId,
                                  String copyTitle) {
         File copiedFile = new File();
         copiedFile.setName(copyTitle);
         try {
-            return service.files().copy(originFileId, copiedFile).execute();
+            return service.files().copy(originFileId, copiedFile).execute().getId();
         } catch (IOException e) {
             System.out.println("An error occurred: " + e);
         }
@@ -205,8 +205,7 @@ public class Budgets {
     }
 
     public static String createFile(Drive service, String originFileID, String copyTitle){
-        File newFile = copyFile(service, originFileID, copyTitle);
-        return newFile.getId();
+        return copyFile(service, originFileID, copyTitle);
     }
 
 

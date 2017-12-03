@@ -194,10 +194,13 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                     MakeRequestTaskCreate create = new MakeRequestTaskCreate(mCredential, oldFileID, newFileName);
                     break;
                 case 3:
+                    //do not call for now
                     break;
                 case 4:
+                    //do not call for now
                     break;
                 case 5:
+                    //do not call for now
                     break;
             }
         }
@@ -519,7 +522,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         private List<String> getDataFromApi() throws IOException {
             // Get a list of up to 10 files.
             List<String> fileID = new ArrayList<String>();
-            fileID.add(Budgets.copyFile(mService, oldFileID, newFileName).getName());
+            fileID.add(Budgets.copyFile(mService, oldFileID, newFileName));
+            //returns a single fileID in a list
             return fileID; //tfw you return a single element list because doInBackground complains
         }
 
@@ -587,6 +591,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             // Get a list of up to 10 files.
             List<String> fileID = new ArrayList<String>();
             fileID.add(Budgets.createFile(mService, oldFileID, newFileName));
+            //returns single FileID stored in List
             return fileID;
         }
 
