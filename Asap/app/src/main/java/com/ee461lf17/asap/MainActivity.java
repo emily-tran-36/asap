@@ -23,7 +23,6 @@ import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -39,8 +38,7 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.Spinner;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
+import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.data.BarEntry;
@@ -48,9 +46,6 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.utils.ColorTemplate;
-import android.widget.TextView;
-
-
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.api.client.extensions.android.http.AndroidHttp;
@@ -119,12 +114,13 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     static ArrayList<String> accountsList = new ArrayList<String>();
 
     static HashMap<String, String> budgetAmountMap = new HashMap<String, String>();
+    static HashMap<String, String> budgetAccountMap = new HashMap<String, String>();
+
     static HashMap<String, String> accountAmountMap = new HashMap<String, String>();
     //static HashMap<String, List<String>> expenseMap = new HashMap<String, List<String>>();
 
 
     static HashMap<String, HashMap<String, List<String>>> budgetExpenseMap = new HashMap<String, HashMap<String, List<String>>>();
-    static HashMap<String, String> budgetAccountMap = new HashMap<String, String>();
 
     private static String TAG = "MainActivity";
 
@@ -195,6 +191,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                                 if(accountsList.contains("No accounts yet.")){
                                     accountsList.remove("No accounts yet.");
                                 }
+
                                 accountsList.add(Name.getText().toString());
                                 accountAmountMap.put(Name.getText().toString(), Amount.getText().toString());
 
@@ -250,6 +247,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                                 final String accountsText = accounts.getSelectedItem().toString();
 
                                 budgetList.add(Name.getText().toString());
+
+                                budgetAccountMap.put(Name.getText().toString(), accountsText);
                                 budgetAmountMap.put(Name.getText().toString(), Amount.getText().toString());
                                 popup.dismiss();
 
@@ -262,9 +261,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
                             public void onClick(View arg0) {
                                 popup.dismiss();
-
                             }
-
                         });
             }
         });
@@ -367,6 +364,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                             public void onClick(View arg0) {
 
                                 String accountsText = accounts.getSelectedItem().toString();
+
+                                
                                 //budgetList.add(Name.getText().toString());
 
 //                                ArrayList<String> tempList = new ArrayList<String>();
@@ -611,7 +610,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 mainListView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
                     public void onItemClick(AdapterView<?> parent, View view,
                                             int position, long id) {
-                        //if (position == 0) {
                             Intent myIntent = new Intent(view.getContext(), BudgetDetailsActivity.class);
                             String  budgetName    = (String) mainListView.getItemAtPosition(position);
 
@@ -619,16 +617,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                             myIntent.putExtra("Current Budget", budgetName);
 
                             startActivity(myIntent);
-                            //startActivityForResult(myIntent, 0);
-                       // }
-//                        if (position == 1) {
-//                            Intent myIntent = new Intent(view.getContext(), BudgetDetailsActivity.class);
-//                            startActivityForResult(myIntent, 0);
-//                        }
-//                        if (position == 2) {
-//                            Intent myIntent = new Intent(view.getContext(), BudgetDetailsActivity.class);
-//                            startActivityForResult(myIntent, 0);
-//                        }
                     }
                 });
                 return rootView;
@@ -644,33 +632,24 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 ListAdapter listAdapter = new ArrayAdapter<String>(getActivity(), R.layout.simplerow, accountsList);
                 final ListView mainListView = (ListView) rootView.findViewById( R.id.mainListView );
                 mainListView.setAdapter( listAdapter );
-                return rootView;
 
                 //click on list item
-//                mainListView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
-//                    public void onItemClick(AdapterView<?> parent, View view,
-//                                            int position, long id) {
-//                        if (position == 0) {
-////                            Intent myIntent = new Intent(view.getContext(), BudgetDetailsActivity.class);
-////                            String  accountName    = (String) mainListView.getItemAtPosition(position);
-////
-////                            myIntent.putExtra("Expense Details", budgetExpenseMap);
-////                            myIntent.putExtra("Current Budget", accountName);
-//
-//                            startActivity(myIntent);
-//                            //startActivityForResult(myIntent, 0);
-//                        }
-//                        if (position == 1) {
-//                            Intent myIntent = new Intent(view.getContext(), BudgetDetailsActivity.class);
-//                            startActivityForResult(myIntent, 0);
-//                        }
-//                        if (position == 2) {
-//                            Intent myIntent = new Intent(view.getContext(), BudgetDetailsActivity.class);
-//                            startActivityForResult(myIntent, 0);
-//                        }
-//                    }
-//                });
+                mainListView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+                    public void onItemClick(AdapterView<?> parent, View view,
+                                            int position, long id) {
 
+                            Intent myIntent = new Intent(view.getContext(), AccountDetailsActivity.class);
+                            String  accountName    = (String) mainListView.getItemAtPosition(position);
+
+//                            myIntent.putExtra("Expense Details", budgetExpenseMap);
+//                            myIntent.putExtra("Current Budget", accountName);
+
+                            startActivity(myIntent);
+
+                    }
+                });
+
+                return rootView;
 
             }
             else {
