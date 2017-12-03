@@ -576,7 +576,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 //                for(String s: budgets){
 //                    budgetList.add(s);
 //                }
-                budgetList.addAll( Arrays.asList(budgets) );
+                if (budgetList.isEmpty()) {
+                    budgetList.addAll( Arrays.asList(budgets) );
+                }
 
                 // Create ArrayAdapter using the budget list.
                 ListAdapter budgetAdapter = new ArrayAdapter<String>(getActivity(), R.layout.simplerow, budgetList);
@@ -612,7 +614,10 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             }
             else if(viewNumber == 2){
                 String[] accounts = new String[] { "No accounts yet."};
-                accountsList.addAll( Arrays.asList(accounts) );
+                if (accountsList.isEmpty()) {
+                    accountsList.addAll( Arrays.asList(accounts) );
+                }
+
                 // Create ArrayAdapter using the budget list.
                 ListAdapter accountAdapter = new ArrayAdapter<String>(getActivity(), R.layout.simplerow, accountsList);
                 final ListView mainListView = (ListView) rootView.findViewById( R.id.mainListView );
