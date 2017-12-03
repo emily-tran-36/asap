@@ -692,7 +692,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
                 pieChart.setData(pieData);
 
-                pieChart.animateY(5000);
+                pieChart.animateY(3000);
                 return chartView;
             }
         }

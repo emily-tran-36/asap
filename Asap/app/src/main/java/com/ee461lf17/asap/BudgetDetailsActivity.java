@@ -1,5 +1,6 @@
 package com.ee461lf17.asap;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Gravity;
@@ -29,6 +30,7 @@ public class BudgetDetailsActivity extends AppCompatActivity {
 
 
         Set<String> expensesKeySet =  budgetDetailsPassed.keySet();
+        boolean greyEntry = false;
         for(String s: expensesKeySet){
             HashMap<String, List<String>> curExpense =  budgetDetailsPassed.get(s);
             List<String> curDetails = curExpense.get(s);
@@ -52,6 +54,14 @@ public class BudgetDetailsActivity extends AppCompatActivity {
 
 
                 TableRow tableRow = new TableRow(this);
+                if(greyEntry){
+                    greyEntry = false;
+                    tableRow.setBackgroundColor(Color.parseColor("#E8EDEF"));
+                }
+                else{
+                    greyEntry = true;
+                }
+
                 tableRow.setGravity(Gravity.LEFT);
                 tableRow.setLayoutParams(new TableRow.LayoutParams(
                         TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
@@ -61,10 +71,18 @@ public class BudgetDetailsActivity extends AppCompatActivity {
                 textView2.setText(curDetails.get(1));
                 textView3.setText(curDetails.get(2));
 
+                float density = this.getResources().getDisplayMetrics().density;
+                textView.setTextSize((int)density*18);
+                textView1.setTextSize((int)density*18);
+                textView2.setTextSize((int)density*18);
+                textView3.setTextSize((int)density*18);
+
+
                 textView.setGravity(Gravity.LEFT);
                 textView1.setGravity(Gravity.LEFT);
                 textView2.setGravity(Gravity.LEFT);
                 textView3.setGravity(Gravity.LEFT);
+
 
 
                 textView.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
