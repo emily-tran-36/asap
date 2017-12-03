@@ -1,17 +1,23 @@
 package com.ee461lf17.asap;
 
 import android.app.Activity;
+import android.os.AsyncTask;
 
 import com.google.api.client.extensions.android.http.AndroidHttp;
 
+import com.google.api.client.googleapis.batch.json.JsonBatchCallback;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
+import com.google.api.client.googleapis.json.GoogleJsonError;
+import com.google.api.client.http.HttpHeaders;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
+import com.google.api.services.drive.model.Permission;
+import com.google.api.services.drive.model.PermissionList;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.ValueRange;
 
@@ -35,13 +41,14 @@ import static com.ee461lf17.asap.MainActivity.REQUEST_AUTHORIZATION;
  */
 
 public class Budgets {
-    private static final String MASTER_ID = "1rf4l4FVyEMBKhRdwFEGz-rkl1zcvDImSModS5IerNA0";
+    private static final String MASTER_ID = "1Vm3W1DfUzf7NKCJEfCc5i98sNEikln27"; //"1rf4l4FVyEMBKhRdwFEGz-rkl1zcvDImSModS5IerNA0";
     private static final ExecutorService executor = Executors.newFixedThreadPool(1);
 
     private GoogleAccountCredential credential;
+    private Activity callingActivity;
 
     private final String accountName;
-    private final String masterSheetID;
+    private final String masterSheetID = "1Vm3W1DfUzf7NKCJEfCc5i98sNEikln27";
     private List<String> templateIDs = new ArrayList<>();
     private List<String> accountIDs = new ArrayList<>();
     private List<String> accountNames = new ArrayList<>();
@@ -51,10 +58,11 @@ public class Budgets {
 
     public Budgets(GoogleAccountCredential mCredential, Activity callingActivity) {
         credential = mCredential;
+        this.callingActivity = callingActivity;
         //addExpenditure(callingActivity, credential, "1Vl9m-oPg0w4QmXz-29POvEN7FHCl34feXvGqWplpDHw","Shit", 2222, "bullshit", "12/01/2017");
         while(mCredential.getSelectedAccountName() == null) {}
         accountName = mCredential.getSelectedAccountName().toLowerCase();
-        masterSheetID = getMasterIDFromSheet(callingActivity);
+        //masterSheetID = getMasterIDFromSheet(callingActivity);
         //updateTemplateBudgetNameAccountIDs(callingActivity);
         System.out.println("Initialization finished");
     }
@@ -286,5 +294,101 @@ public class Budgets {
         return new Sheets.Builder(httpTransport, jsonFactory, credential)
                 .setApplicationName("Asap")
                 .build();
+    }
+
+    public void addUserToBudget() {
+        AddUserToBudgetTask task = new AddUserToBudgetTask(credential);
+        task.execute();
+    }
+
+    /**
+     * An asynchronous task that handles the Drive API call.
+     * Placing the API calls in their own task ensures the UI stays responsive.
+     */
+    private class AddUserToBudgetTask extends AsyncTask<Void, Void, List<String>> {
+        private com.google.api.services.drive.Drive mService = null;
+        private Exception mLastError = null;
+        private String emailToAdd;
+
+        AddUserToBudgetTask(GoogleAccountCredential credential) {
+            HttpTransport transport = AndroidHttp.newCompatibleTransport();
+            JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
+            mService = new com.google.api.services.drive.Drive.Builder(
+                    transport, jsonFactory, credential)
+                    .setApplicationName("Asap")
+                    .build();
+        }
+
+        /**
+         * Background task to call Drive API.
+         * @param params no parameters needed for this task.
+         */
+        @Override
+        protected List<String> doInBackground(Void... params) {
+            try {
+                return getDataFromApi();
+            } catch (UserRecoverableAuthIOException e ) {
+                callingActivity.startActivityForResult(e.getIntent(), REQUEST_AUTHORIZATION);
+                return null;
+            } catch (Exception e) {
+                mLastError = e;
+                cancel(true);
+                return null;
+            }
+        }
+
+        /**
+         * Fetch a list of up to 10 file names and IDs.
+         * @return List of Strings describing files, or an empty list if no files
+         *         found.
+         * @throws IOException
+         */
+        private List<String> getDataFromApi() throws IOException {
+            // Get a list of up to 10 files.
+            List<String> permissionResults = new ArrayList<String>();
+
+            JsonBatchCallback<Permission> callback = new JsonBatchCallback<Permission>() {
+                @Override
+                public void onFailure(GoogleJsonError e,
+                                      HttpHeaders responseHeaders)
+                        throws IOException {
+                    // Handle error
+                    System.err.println(e.getMessage());
+                }
+
+                @Override
+                public void onSuccess(Permission permission,
+                                      HttpHeaders responseHeaders)
+                        throws IOException {
+                    System.out.println("Permission ID: " + permission.getId());
+                }
+            };
+
+            Permission userPermission = new Permission()
+                    .setType("user")
+                    .setRole("writer")
+                    .setEmailAddress(emailToAdd);
+            Permission res = mService.permissions().create(masterSheetID, userPermission)
+                    .setFields("id")
+                    .execute();
+            return permissionResults;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            // Fetch email from text field and store it in class
+            emailToAdd = "rob.misasi@utexas.edu"; // TODO: Replace with getter.
+        }
+
+        @Override
+        protected void onPostExecute(List<String> output) {
+            //mProgress.hide();
+            if (output == null || output.size() == 0) {
+                //mOutputText.setText("No results returned.");
+            } else {
+                //output.add(0, "Data retrieved using the Drive API:");
+                //mOutputText.setText(TextUtils.join("\n", output));
+            }
+        }
     }
 }
