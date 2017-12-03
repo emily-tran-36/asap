@@ -14,6 +14,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -29,6 +30,15 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.Spinner;
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+
+import com.github.mikephil.charting.charts.PieChart;
+import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.PieData;
+import com.github.mikephil.charting.data.PieDataSet;
+import com.github.mikephil.charting.utils.ColorTemplate;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -73,6 +83,15 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     private DrawerLayout mDrawer;
     private NavigationView nvDrawer;
 
+    //dashboard variables
+    static PieChart pieChart ;
+    static PieDataSet pieDataSet ;
+    static PieData pieData ;
+    static ArrayList<Entry> entries ;
+    static ArrayList<String> PieEntryLabels ;
+
+
+
     static ArrayList<String> budgetList = new ArrayList<String>();
     static ArrayList<String> categoriesList = new ArrayList<String>();
     static ArrayList<String> accountsList = new ArrayList<String>();
@@ -85,8 +104,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     static HashMap<String, HashMap<String, List<String>>> budgetExpenseMap = new HashMap<String, HashMap<String, List<String>>>();
     static HashMap<String, String> budgetAccountMap = new HashMap<String, String>();
 
-
-
+    private static String TAG = "MainActivity";
 
 
     @Override
@@ -496,7 +514,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
+
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+            View chartView = inflater.inflate(R.layout.piechart_main, container, false);
             //TextView textView = (TextView) rootView.findViewById(R.id.section_label);
             //textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));
 
@@ -540,7 +560,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                         }
                     }
                 });
-
+                return rootView;
 
             }
             else if(viewNumber == 2){
@@ -550,13 +570,31 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 ListAdapter listAdapter = new ArrayAdapter<String>(getActivity(), R.layout.simplerow, accountsList);
                 ListView mainListView = (ListView) rootView.findViewById( R.id.mainListView );
                 mainListView.setAdapter( listAdapter );
-
+                return rootView;
 
             }
-            else{
-                
+            else {
+
+                pieChart = (PieChart) chartView.findViewById(R.id.chart1);
+                entries = new ArrayList<>();
+
+                PieEntryLabels = new ArrayList<String>();
+
+                AddValuesToPIEENTRY();
+
+                AddValuesToPieEntryLabels();
+
+                pieDataSet = new PieDataSet(entries, "");
+
+                pieData = new PieData(PieEntryLabels, pieDataSet);
+
+                pieDataSet.setColors(ColorTemplate.COLORFUL_COLORS);
+
+                pieChart.setData(pieData);
+
+                pieChart.animateY(5000);
+                return chartView;
             }
-            return rootView;
         }
     }
 
@@ -642,4 +680,27 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 REQUEST_GOOGLE_PLAY_SERVICES);
         dialog.show();
     }
+
+    static public void AddValuesToPIEENTRY(){
+
+        entries.add(new BarEntry(2f, 0));
+        entries.add(new BarEntry(4f, 1));
+        entries.add(new BarEntry(6f, 2));
+        entries.add(new BarEntry(8f, 3));
+        entries.add(new BarEntry(7f, 4));
+        entries.add(new BarEntry(3f, 5));
+
+    }
+
+    static public void AddValuesToPieEntryLabels(){
+
+        PieEntryLabels.add("January");
+        PieEntryLabels.add("February");
+        PieEntryLabels.add("March");
+        PieEntryLabels.add("April");
+        PieEntryLabels.add("May");
+        PieEntryLabels.add("June");
+
+    }
+
 }
