@@ -99,12 +99,13 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     static ArrayList<String> accountsList = new ArrayList<String>();
 
     static HashMap<String, String> budgetAmountMap = new HashMap<String, String>();
+    static HashMap<String, String> budgetAccountMap = new HashMap<String, String>();
+
     static HashMap<String, String> accountAmountMap = new HashMap<String, String>();
     //static HashMap<String, List<String>> expenseMap = new HashMap<String, List<String>>();
 
 
     static HashMap<String, HashMap<String, List<String>>> budgetExpenseMap = new HashMap<String, HashMap<String, List<String>>>();
-    static HashMap<String, String> budgetAccountMap = new HashMap<String, String>();
 
 
 
@@ -176,6 +177,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                                 if(accountsList.contains("No accounts yet.")){
                                     accountsList.remove("No accounts yet.");
                                 }
+
                                 accountsList.add(Name.getText().toString());
                                 accountAmountMap.put(Name.getText().toString(), Amount.getText().toString());
 
@@ -231,6 +233,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                                 final String accountsText = accounts.getSelectedItem().toString();
 
                                 budgetList.add(Name.getText().toString());
+
+                                budgetAccountMap.put(Name.getText().toString(), accountsText);
                                 budgetAmountMap.put(Name.getText().toString(), Amount.getText().toString());
                                 popup.dismiss();
 
@@ -243,9 +247,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
                             public void onClick(View arg0) {
                                 popup.dismiss();
-
                             }
-
                         });
             }
         });
@@ -348,6 +350,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                             public void onClick(View arg0) {
 
                                 String accountsText = accounts.getSelectedItem().toString();
+
+                                
                                 //budgetList.add(Name.getText().toString());
 
 //                                ArrayList<String> tempList = new ArrayList<String>();
