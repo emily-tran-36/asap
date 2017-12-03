@@ -180,9 +180,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         } else if (!isDeviceOnline()) {
             mOutputText.setText("No network connection available.");
         } else {
-            MakeRequestTask debug = new MakeRequestTask(mCredential);
-            Boolean flag = debug.isDriveServiceNull();
-            debug.execute();
+//            MakeRequestTask debug = new MakeRequestTask(mCredential);
+//            Boolean flag = debug.isDriveServiceNull();
+//            debug.execute();
         }
     }
 
@@ -447,7 +447,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
         @Override
         protected void onPostExecute(List<String> output) {
-            mProgress.hide();
+            //mProgress.hide();
             if (output == null || output.size() == 0) {
                 //mOutputText.setText("No results returned.");
             } else {
