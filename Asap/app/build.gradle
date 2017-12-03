@@ -22,6 +22,12 @@ android {
     }
 }
 
+
+repositories {
+    maven { url "https://jitpack.io" }
+}
+
+
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
@@ -34,7 +40,7 @@ dependencies {
     compile 'com.github.clans:fab:1.6.4'
     compile 'com.google.android.gms:play-services-auth:11.6.0'
     compile 'pub.devrel:easypermissions:0.3.0'
-
+    compile 'com.github.PhilJay:MPAndroidChart:v2.2.4'
 
 
 
