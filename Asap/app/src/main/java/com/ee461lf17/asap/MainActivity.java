@@ -7,15 +7,13 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
-import android.support.design.widget.NavigationView;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.TabLayout;
-import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -27,9 +25,6 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Gravity;
-import android.os.Bundle;
-import android.text.TextUtils;
-import android.text.method.ScrollingMovementMethod;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -43,8 +38,6 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.Spinner;
-
-import android.widget.Button;
 import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -215,7 +208,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 //PopupWindow popup = new PopupWindow((int)density*240, (int)density*285);
                 popup.showAtLocation(layout, Gravity.CENTER, 0, 0);
 
-                Spinner accounts = popupLayout.findViewById(R.id.spinner4);
+                final Spinner accounts = popupLayout.findViewById(R.id.spinner4);
                 String[] accNames = accountsList.toArray(new String[0]);
                 ArrayAdapter<String> accAdapter = new ArrayAdapter<String>(MainActivity.this,
                         R.layout.spinner_item, accNames);
@@ -226,6 +219,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 final EditText Amount = (EditText) popupLayout.findViewById(R.id.newBudgetAmount);
                 final EditText Emails = (EditText) popupLayout.findViewById(R.id.newEmails);
 
+
                 ((Button) popupLayout.findViewById(R.id.confirm_new_budget))
                         .setOnClickListener(new View.OnClickListener() {
 
@@ -233,6 +227,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                                 if(budgetList.contains("No budgets yet.")){
                                     budgetList.remove("No budgets yet.");
                                 }
+
+                                final String accountsText = accounts.getSelectedItem().toString();
 
                                 budgetList.add(Name.getText().toString());
                                 budgetAmountMap.put(Name.getText().toString(), Amount.getText().toString());
@@ -254,10 +250,12 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             }
         });
 
+
         com.github.clans.fab.FloatingActionButton expense = (com.github.clans.fab.FloatingActionButton) findViewById(R.id.fabExpense);
         expense.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
+
                 LayoutInflater inflater = (LayoutInflater) MainActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                 View layout = inflater.inflate(R.layout.activity_main,null);
                 View popupLayout = inflater.inflate(R.layout.popup_new_expense,null);
@@ -266,32 +264,33 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 //PopupWindow popup = new PopupWindow((int)density*240, (int)density*285);
                 popup.showAtLocation(layout, Gravity.CENTER, 0, 0);
 
-                Spinner categories = popupLayout.findViewById(R.id.categoryspinner);
+                final Spinner categories = (Spinner) popupLayout.findViewById(R.id.categoryspinner);
                 String[] catNames = categoriesList.toArray(new String[0]);
                 ArrayAdapter<String> catAdapter = new ArrayAdapter<String>(MainActivity.this,
                         R.layout.spinner_item, catNames);
                 catAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                 categories.setAdapter(catAdapter);
 
-                Spinner budgets = popupLayout.findViewById(R.id.budgetspinner);
+
+                final Spinner Budget = (Spinner) popupLayout.findViewById(R.id.budgetspinner);
                 String[] budgetNames = budgetList.toArray(new String[0]);
                 ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(MainActivity.this,
                 R.layout.spinner_item, budgetNames);
                 dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                budgets.setAdapter(dataAdapter);
+                Budget.setAdapter(dataAdapter);
 
                 final EditText Name = (EditText) popupLayout.findViewById(R.id.newExpenseName);
                 final EditText Amount = (EditText) popupLayout.findViewById(R.id.newExpenseAmount);
-                final Spinner Budget = (Spinner) popupLayout.findViewById(R.id.budgetspinner);
-                final String budgetText = Budget.getSelectedItem().toString();
                 final Spinner Category = (Spinner) popupLayout.findViewById(R.id.categoryspinner);
-                final String categoryText = Category.getSelectedItem().toString();
 
                 ((Button) popupLayout.findViewById(R.id.confirm_new_expense))
                         .setOnClickListener(new View.OnClickListener() {
 
                             public void onClick(View arg0) {
                                 //budgetList.add(Name.getText().toString());
+
+                                final String categoryText = Category.getSelectedItem().toString();
+                                final String budgetText = Budget.getSelectedItem().toString();
 
                                 ArrayList<String> tempList = new ArrayList<String>();
                                 tempList.add(Amount.getText().toString());
@@ -332,7 +331,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                 //PopupWindow popup = new PopupWindow((int)density*240, (int)density*285);
                 popup.showAtLocation(layout, Gravity.CENTER, 0, 0);
 
-                Spinner accounts = popupLayout.findViewById(R.id.spinner3);
+                final Spinner accounts = (Spinner) popupLayout.findViewById(R.id.spinner3);
                 String[] accNames = accountsList.toArray(new String[0]);
                 ArrayAdapter<String> accAdapter = new ArrayAdapter<String>(MainActivity.this,
                         R.layout.spinner_item, accNames);
@@ -347,6 +346,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                         .setOnClickListener(new View.OnClickListener() {
 
                             public void onClick(View arg0) {
+
+                                String accountsText = accounts.getSelectedItem().toString();
                                 //budgetList.add(Name.getText().toString());
 
 //                                ArrayList<String> tempList = new ArrayList<String>();
