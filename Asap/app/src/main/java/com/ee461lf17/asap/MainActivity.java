@@ -55,7 +55,7 @@ import pub.devrel.easypermissions.EasyPermissions;
 
 public class MainActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks{
     GoogleAccountCredential mCredential;
-    Budgets budget;
+    Budgets budgetManager;
     private TextView mOutputText;
     static final int REQUEST_ACCOUNT_PICKER = 1000;
     static final int REQUEST_AUTHORIZATION = 1001;
@@ -114,7 +114,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         mCredential = GoogleAccountCredential.usingOAuth2(
                 getApplicationContext(), Arrays.asList(SCOPES))
                 .setBackOff(new ExponentialBackOff());
-        //promptUserToChooseAccount();
+        promptUserToChooseAccount();
+        budgetManager = new Budgets(mCredential, this);
+       
         // Initialize credentials and service object.
     }
     //Will ensure google play services are installed and up-to-date
@@ -467,7 +469,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
         @Override
         protected void onPostExecute(List<String> output) {
-            mProgress.hide();
+            //mProgress.hide();
             if (output == null || output.size() == 0) {
                 //mOutputText.setText("No results returned.");
             } else {
