@@ -42,9 +42,17 @@ dependencies {
     compile 'pub.devrel:easypermissions:0.3.0'
     compile 'com.github.PhilJay:MPAndroidChart:v2.2.4'
 
+
+
+    compile 'com.google.api-client:google-api-client:1.23.0'
+    compile 'com.google.apis:google-api-services-drive:v3-rev90-1.23.0'
+    compile 'pub.devrel:easypermissions:0.3.0'
+    compile 'com.google.oauth-client:google-oauth-client-jetty:1.23.0'
+
     compile('com.google.api-client:google-api-client-android:1.23.0') {
         exclude group: 'org.apache.httpcomponents'
     }
+    compile 'com.google.android.gms:play-services-auth:11.6.0'
     compile('com.google.apis:google-api-services-sheets:v4-rev490-1.23.0') {
         exclude group: 'org.apache.httpcomponents'
     }

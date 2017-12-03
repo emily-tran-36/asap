@@ -2,7 +2,9 @@ package com.ee461lf17.asap;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
+import android.view.Gravity;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 
 import java.util.HashMap;
@@ -13,12 +15,17 @@ public class BudgetDetailsActivity extends AppCompatActivity {
 
     HashMap<String, HashMap<String, List<String>>> budgetDetailsPassed;
     String budgetNamePassed;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_budget_details);
         budgetDetailsPassed = (HashMap<String, HashMap<String, List<String>>>) getIntent().getSerializableExtra("Expense Details");
         budgetNamePassed = getIntent().getStringExtra("Current Budget");
+
+        TableLayout tableLayout = (TableLayout) findViewById(R.id.budgetDetailTable);
+        tableLayout.setStretchAllColumns(true);
 
 
         Set<String> expensesKeySet =  budgetDetailsPassed.keySet();
@@ -27,24 +34,60 @@ public class BudgetDetailsActivity extends AppCompatActivity {
             List<String> curDetails = curExpense.get(s);
             String curBudget = curDetails.get(2);
             if(curBudget.equals(budgetNamePassed)){
-                String data1 = curDetails.get(0);
-                String data2 = curDetails.get(1);
-                TextView textView1 = (TextView) findViewById(R.id.textView6);
-                TextView textView2 = (TextView) findViewById(R.id.textView7);
-                TextView textView3 = (TextView) findViewById(R.id.textView8);
-                TextView textView4 = (TextView) findViewById(R.id.textView9);
+//                String data1 = curDetails.get(0);
+//                String data2 = curDetails.get(1);
+//                TextView textView1 = (TextView) findViewById(R.id.textView6);
+//                TextView textView2 = (TextView) findViewById(R.id.textView7);
+//                TextView textView3 = (TextView) findViewById(R.id.textView8);
+//                TextView textView4 = (TextView) findViewById(R.id.textView9);
+//
+//                textView1.setText(s);
+//                textView2.setText(curDetails.get(0));
+//                textView3.setText(curDetails.get(1));
+//                textView4.setText(curDetails.get(2));
+                TextView textView = new TextView(this);
+                TextView textView1 = new TextView(this);
+                TextView textView2 = new TextView(this);
+                TextView textView3 = new TextView(this);
 
-                textView1.setText(s);
-                textView2.setText(curDetails.get(0));
-                textView3.setText(curDetails.get(1));
-                textView4.setText(curDetails.get(2));
+
+                TableRow tableRow = new TableRow(this);
+                tableRow.setGravity(Gravity.LEFT);
+                tableRow.setLayoutParams(new TableRow.LayoutParams(
+                        TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
+
+                textView.setText(s);
+                textView1.setText(curDetails.get(0));
+                textView2.setText(curDetails.get(1));
+                textView3.setText(curDetails.get(2));
+
+                textView.setGravity(Gravity.LEFT);
+                textView1.setGravity(Gravity.LEFT);
+                textView2.setGravity(Gravity.LEFT);
+                textView3.setGravity(Gravity.LEFT);
+
+
+                textView.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
+                textView1.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
+                textView2.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
+                textView3.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
+
+
+                tableRow.addView(textView);
+                tableRow.addView(textView1);
+                tableRow.addView(textView2);
+                tableRow.addView(textView3);
+
+
+                tableLayout.addView(tableRow);
             }
+
         }
+//        linearLayout.addView(tableLayout);
 
 
-       View row1 = findViewById(R.id.dataRow1);
-        //Send the data from the hashmap to appropriate columns here
     }
+
 
 
 }
