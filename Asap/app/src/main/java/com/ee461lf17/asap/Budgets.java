@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 
 import com.google.api.client.extensions.android.http.AndroidHttp;
 
+import com.google.api.client.googleapis.batch.BatchRequest;
 import com.google.api.client.googleapis.batch.json.JsonBatchCallback;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
@@ -17,7 +18,6 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.Permission;
-import com.google.api.services.drive.model.PermissionList;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.ValueRange;
 
@@ -26,7 +26,6 @@ import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -41,18 +40,16 @@ import static com.ee461lf17.asap.MainActivity.REQUEST_AUTHORIZATION;
  */
 
 public class Budgets {
-    private static final String MASTER_ID = "1rf4l4FVyEMBKhRdwFEGz-rkl1zcvDImSModS5IerNA0";
+    private static final String HOME_ID = "1rf4l4FVyEMBKhRdwFEGz-rkl1zcvDImSModS5IerNA0";
     private static final ExecutorService executor = Executors.newFixedThreadPool(1);
 
     private GoogleAccountCredential credential;
 
     private String userName;
-    private String masterSheetID;
+    private String userSheetID;
 
-    private List<String> templateIDs = new ArrayList<>();
     private List<String> accountIDs = new ArrayList<>();
     private List<String> accountNames = new ArrayList<>();
-    private List<String> budgetSummaryIDs = new ArrayList<>();
     private List<String> budgetNames = new ArrayList<>();
     private List<String> budgetIDs = new ArrayList<>();
 
@@ -69,8 +66,8 @@ public class Budgets {
             public void run() {
                 while(credential.getSelectedAccountName() == null) {}
                 userName = credential.getSelectedAccountName().toLowerCase();
-                masterSheetID = getMasterIDFromSheet(callingActivity);
-                updateTemplateBudgetNameAccountIDs(callingActivity);
+                userSheetID = getMasterIDFromSheet(callingActivity);
+                updateBudgetAccountNameIDs(callingActivity);
                 isReady = true;
 
             }
@@ -80,36 +77,25 @@ public class Budgets {
         return isReady;
     }
     //Pre: Account credential, userName, and masterID are set
-    private void updateTemplateBudgetNameAccountIDs(Activity callingActivity){
+    private void updateBudgetAccountNameIDs(Activity callingActivity){
         try {
             Sheets sheetsService = createSheetsService();
             Sheets.Spreadsheets.Values.Get request = sheetsService.spreadsheets().values()
-                    .get(masterSheetID, "a:d");
+                    .get(userSheetID, "a:d");
             Future<List<List<Object>>> f = runGetRequestOnSeparateThread(callingActivity, request);
             List<List<Object>> list = f.get();
             for(int i = 1; i < list.size(); ++i) {
                 List<Object> l = list.get(i);
                 if(1 < l.size() && !l.get(0).equals("") && !l.get(1).equals("")){
-                    String budgetSummaryID = (String)l.get(1);
-                    sheetsService = createSheetsService();
-                    request = sheetsService.spreadsheets().values().get(budgetSummaryID, "b2:b");
-                    f = runGetRequestOnSeparateThread(callingActivity, request);
-                    List<List<Object>> list2 = f.get();
-                    String templateID = (String)list2.get(0).get(0);
-                    String latestBudget = "";
-                    if(list.size() > 1){
-                        latestBudget = (String)list2.get(list2.size() - 1).get(0);
-                    }
-                    templateIDs.add(templateID);
-                    budgetIDs.add(latestBudget);
-                    budgetSummaryIDs.add(budgetSummaryID);
+                    String budgetID = (String)l.get(1);
                     String budgetName = (String)l.get(0);
+                    budgetIDs.add(budgetID);
                     budgetNames.add(budgetName);
                 }
                 if(3 < l.size() && !l.get(2).equals("") && !l.get(3).equals("")) {
                     String accountName = (String)l.get(2);
-                    accountNames.add(accountName);
                     String accountID = (String)l.get(3);
+                    accountNames.add(accountName);
                     accountIDs.add(accountID);
                 }
 
@@ -124,7 +110,7 @@ public class Budgets {
         try {
             Sheets sheetsService = createSheetsService();
             Sheets.Spreadsheets.Values.Get request = sheetsService.spreadsheets().values()
-                    .get(MASTER_ID, "a:b");
+                    .get(HOME_ID, "a:b");
             Future<List<List<Object>>> f = runGetRequestOnSeparateThread(callingActivity, request);
             List<List<Object>> list = f.get();
             for(List<Object> l: list) {
@@ -162,7 +148,7 @@ public class Budgets {
 
         ValueRange requestBody = new ValueRange();
         requestBody.set("range", "A1");
-        Object[][] ray = {{"","","","","","","","","","","",category,expense,comment,date}};
+        Object[][] ray = {{"","","","","","",category,expense,comment,date}};
         requestBody.set("values", new ArrayList<Object>(Arrays.asList(ray)));
         Sheets sheetsService;
         try {
@@ -283,7 +269,7 @@ public class Budgets {
     }
 
     /**
-     * An asynchronous task that handles the Drive API call.
+     * An asynchronous task that adds a new writer to the user sheet
      * Placing the API calls in their own task ensures the UI stays responsive.
      */
     private class AddUserToBudgetTask extends AsyncTask<Void, Void, List<String>> {
@@ -330,7 +316,7 @@ public class Budgets {
          * @throws IOException
          */
         private List<String> getDataFromApi() throws IOException {
-            // Get a list of up to 10 files.
+            // Add a user as a writer to the userSheetID
             List<String> permissionResults = new ArrayList<String>();
 
             JsonBatchCallback<Permission> callback = new JsonBatchCallback<Permission>() {
@@ -354,9 +340,12 @@ public class Budgets {
                     .setType("user")
                     .setRole("writer")
                     .setEmailAddress(emailToAdd);
-            Permission res = mService.permissions().create(masterSheetID, userPermission)
+
+            mService.permissions().create(userSheetID, userPermission)
                     .setFields("id")
                     .execute();
+
+
             return permissionResults;
         }
 
@@ -364,6 +353,102 @@ public class Budgets {
         protected void onPreExecute() {
             // Fetch email from text field and store it in class
             emailToAdd = "rob.misasi@utexas.edu"; // TODO: Replace with getter.
+        }
+
+        @Override
+        protected void onPostExecute(List<String> output) {
+            //mProgress.hide();
+            if (output == null || output.size() == 0) {
+                //mOutputText.setText("No results returned.");
+            } else {
+                //output.add(0, "Data retrieved using the Drive API:");
+                //mOutputText.setText(TextUtils.join("\n", output));
+            }
+        }
+    }
+
+    /**
+     * An asynchronous task that makes a file publicly readable.
+     * Placing the API calls in their own task ensures the UI stays responsive.
+     */
+    private class MakeFilePubliclyReadableTask extends AsyncTask<Void, Void, List<String>> {
+        private com.google.api.services.drive.Drive mService = null;
+        private Exception mLastError = null;
+        private String fileId;
+        private Activity callingActivity;
+
+        MakeFilePubliclyReadableTask(GoogleAccountCredential credential, Activity callingActivity, String fileId) {
+            this.fileId = fileId;
+            this.callingActivity = callingActivity;
+            HttpTransport transport = AndroidHttp.newCompatibleTransport();
+            JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
+            mService = new com.google.api.services.drive.Drive.Builder(
+                    transport, jsonFactory, credential)
+                    .setApplicationName("Asap")
+                    .build();
+        }
+
+        /**
+         * Background task to call Drive API.
+         *
+         * @param params no parameters needed for this task.
+         */
+        @Override
+        protected List<String> doInBackground(Void... params) {
+            try {
+                return getDataFromApi();
+            } catch (UserRecoverableAuthIOException e) {
+                callingActivity.startActivityForResult(e.getIntent(), REQUEST_AUTHORIZATION);
+                return null;
+            } catch (Exception e) {
+                mLastError = e;
+                cancel(true);
+                return null;
+            }
+        }
+
+        /**
+         * Fetch a list of up to 10 file names and IDs.
+         *
+         * @return List of Strings describing files, or an empty list if no files
+         * found.
+         * @throws IOException
+         */
+        private List<String> getDataFromApi() throws IOException {
+            // Add "anyone" as a reader
+            List<String> permissionResults = new ArrayList<String>();
+
+            JsonBatchCallback<Permission> callback = new JsonBatchCallback<Permission>() {
+                @Override
+                public void onFailure(GoogleJsonError e,
+                                      HttpHeaders responseHeaders)
+                        throws IOException {
+                    // Handle error
+                    System.err.println(e.getMessage());
+                }
+
+                @Override
+                public void onSuccess(Permission permission,
+                                      HttpHeaders responseHeaders)
+                        throws IOException {
+                    System.out.println("Permission ID: " + permission.getId());
+                }
+            };
+
+            Permission publicPermission = new Permission()
+                    .setType("anyone")
+                    .setRole("reader");
+            mService.permissions().create(userSheetID, publicPermission)
+                    .setFields("id")
+                    .execute();
+
+
+            return permissionResults;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            // Fetch email from text field and store it in class
         }
 
         @Override
@@ -419,64 +504,45 @@ public class Budgets {
         return "Unknown Date";
     }
 
-    public List<Object> getBudgetCategories(Activity callingActivity, String budgetName) {
+    public Double getBudgetAllocatedAmount(Activity callingActivity, String budgetName) {
         String budgetID = budgetNameToID(budgetName);
         try {
             Sheets sheetsService = createSheetsService();
             Sheets.Spreadsheets.Values.Get request = sheetsService.spreadsheets().values()
-                    .get(budgetID, "b2:b");
-            request.setMajorDimension("COLUMNS");
+                    .get(budgetID, "b2");
             Future<List<List<Object>>> f = runGetRequestOnSeparateThread(callingActivity, request);
             List<List<Object>> list = f.get();
-            return list.get(0);
+            return (Double)list.get(0).get(0);
         } catch (Exception e) {
             System.out.println("something went wrong " + e);
         }
         return null;
     }
 
-    public List<Object> getBudgetAllocatedAmounts(Activity callingActivity, String budgetName) {
+    public Double getBudgetSpentAmount(Activity callingActivity, String budgetName) {
         String budgetID = budgetNameToID(budgetName);
         try {
             Sheets sheetsService = createSheetsService();
             Sheets.Spreadsheets.Values.Get request = sheetsService.spreadsheets().values()
-                    .get(budgetID, "e2:e");
-            request.setMajorDimension("COLUMNS");
+                    .get(budgetID, "c2");
             Future<List<List<Object>>> f = runGetRequestOnSeparateThread(callingActivity, request);
             List<List<Object>> list = f.get();
-            return list.get(0);
+            return (Double)list.get(0).get(0);
         } catch (Exception e) {
             System.out.println("something went wrong " + e);
         }
         return null;
     }
 
-    public List<Object> getBudgetSpentAmounts(Activity callingActivity, String budgetName) {
+    public Double getBudgetLeftoverAmount(Activity callingActivity, String budgetName) {
         String budgetID = budgetNameToID(budgetName);
         try {
             Sheets sheetsService = createSheetsService();
             Sheets.Spreadsheets.Values.Get request = sheetsService.spreadsheets().values()
-                    .get(budgetID, "f2:f");
-            request.setMajorDimension("COLUMNS");
+                    .get(budgetID, "d2");
             Future<List<List<Object>>> f = runGetRequestOnSeparateThread(callingActivity, request);
             List<List<Object>> list = f.get();
-            return list.get(0);
-        } catch (Exception e) {
-            System.out.println("something went wrong " + e);
-        }
-        return null;
-    }
-
-    public List<Object> getBudgetLeftoverAmounts(Activity callingActivity, String budgetName) {
-        String budgetID = budgetNameToID(budgetName);
-        try {
-            Sheets sheetsService = createSheetsService();
-            Sheets.Spreadsheets.Values.Get request = sheetsService.spreadsheets().values()
-                    .get(budgetID, "g2:g");
-            request.setMajorDimension("COLUMNS");
-            Future<List<List<Object>>> f = runGetRequestOnSeparateThread(callingActivity, request);
-            List<List<Object>> list = f.get();
-            return list.get(0);
+            return (Double)list.get(0).get(0);
         } catch (Exception e) {
             System.out.println("something went wrong " + e);
         }
@@ -551,11 +617,11 @@ public class Budgets {
         try {
             Sheets sheetsService = createSheetsService();
             Sheets.Spreadsheets.Values.Get request = sheetsService.spreadsheets().values()
-                    .get(budgetID, "m2:m");
+                    .get(budgetID, "g3:g");
             request.setMajorDimension("COLUMNS");
             Future<List<List<Object>>> f = runGetRequestOnSeparateThread(callingActivity, request);
             List<List<Object>> list = f.get();
-            return list.get(0).subList(list.get(0).lastIndexOf("") + 1, list.get(0).size());
+            return list.get(0);
         } catch (Exception e) {
             System.out.println("something went wrong " + e);
         }
@@ -567,11 +633,11 @@ public class Budgets {
         try {
             Sheets sheetsService = createSheetsService();
             Sheets.Spreadsheets.Values.Get request = sheetsService.spreadsheets().values()
-                    .get(budgetID, "n2:n");
+                    .get(budgetID, "h3:h");
             request.setMajorDimension("COLUMNS");
             Future<List<List<Object>>> f = runGetRequestOnSeparateThread(callingActivity, request);
             List<List<Object>> list = f.get();
-            return list.get(0).subList(list.get(0).lastIndexOf("") + 1, list.get(0).size());
+            return list.get(0);
         } catch (Exception e) {
             System.out.println("something went wrong " + e);
         }
@@ -583,11 +649,11 @@ public class Budgets {
         try {
             Sheets sheetsService = createSheetsService();
             Sheets.Spreadsheets.Values.Get request = sheetsService.spreadsheets().values()
-                    .get(budgetID, "o2:o");
+                    .get(budgetID, "i3:i");
             request.setMajorDimension("COLUMNS");
             Future<List<List<Object>>> f = runGetRequestOnSeparateThread(callingActivity, request);
             List<List<Object>> list = f.get();
-            return list.get(0).subList(list.get(0).lastIndexOf("") + 1, list.get(0).size());
+            return list.get(0);
         } catch (Exception e) {
             System.out.println("something went wrong " + e);
         }
@@ -599,11 +665,11 @@ public class Budgets {
         try {
             Sheets sheetsService = createSheetsService();
             Sheets.Spreadsheets.Values.Get request = sheetsService.spreadsheets().values()
-                    .get(budgetID, "p2:p");
+                    .get(budgetID, "j3:j");
             request.setMajorDimension("COLUMNS");
             Future<List<List<Object>>> f = runGetRequestOnSeparateThread(callingActivity, request);
             List<List<Object>> list = f.get();
-            return list.get(0).subList(list.get(0).lastIndexOf("") + 1, list.get(0).size());
+            return list.get(0);
         } catch (Exception e) {
             System.out.println("something went wrong " + e);
         }
