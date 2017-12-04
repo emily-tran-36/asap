@@ -261,31 +261,6 @@ public class Budgets {
         return executor.submit(task);
     }
 
-    private static Future<FileList> runDriveSearchRequestOnSeparateThread(final Activity callingActivity, final Drive.Files.List request) {
-        Callable<FileList> task = new Callable<FileList>() {
-            @Override
-            public FileList call() throws Exception {
-                boolean retry = true;
-                FileList response = null;
-                while(retry){
-                    try{
-                        response = request.execute();
-                        retry = false;
-                        return response;
-                    } catch (UserRecoverableAuthIOException e) {
-                        System.out.println("Trying again for permissions");
-                        callingActivity.startActivityForResult(e.getIntent(), REQUEST_AUTHORIZATION);
-                    } catch (Throwable e) {
-                        retry = false;
-                        System.out.println("Was unable to fetch from sheet " + e);
-                    }
-                }
-                return response;
-            }
-        };
-        return executor.submit(task);
-    }
-
     private Sheets createSheetsService() throws IOException, GeneralSecurityException {
         HttpTransport httpTransport = AndroidHttp.newCompatibleTransport();
         JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
@@ -331,6 +306,7 @@ public class Budgets {
         String fileIdToCopy = Budgets.BUDGET_TEMPLATE;
         MakeRequestTaskCreate task = new MakeRequestTaskCreate(credential, callingActivity, fileIdToCopy, budgetName);
         task.execute();
+
     }
 
     /**
@@ -833,6 +809,7 @@ public class Budgets {
         private Exception mLastError = null;
         private String oldFileID = null;
         private String newFileName = null;
+        private String newFileId = null;
         public boolean isDriveServiceNull() {
             return mService == null;
         }
@@ -859,8 +836,6 @@ public class Budgets {
         protected List<String> doInBackground(Void... params) {
             try {
                 List<String> fileId = getDataFromApi();
-                budgetIDs.add(fileId.get(0));
-                budgetNames.add(newFileName);
                 return fileId;
             } catch (UserRecoverableAuthIOException e) {
                 callingActivity.startActivityForResult(e.getIntent(), REQUEST_AUTHORIZATION);
@@ -881,7 +856,31 @@ public class Budgets {
         private List<String> getDataFromApi() throws IOException {
             // Get a list of up to 10 files.
             List<String> fileID = new ArrayList<String>();
-            fileID.add(Budgets.createFile(callingActivity, mService, oldFileID, newFileName));
+            newFileId = Budgets.createFile(callingActivity, mService, oldFileID, newFileName);
+
+            fileID.add(newFileId);
+
+            // Add budget to userSheet
+            String range = "A1";
+            String valueInputOption = "USER_ENTERED";
+            String insertDataOption = "INSERT_ROWS";
+
+            ValueRange requestBody = new ValueRange();
+            requestBody.set("range", "A1");
+            Object[][] ray = {{newFileName, newFileId}};
+            requestBody.set("values", new ArrayList<Object>(Arrays.asList(ray)));
+            Sheets sheetsService;
+            try {
+                sheetsService = createSheetsService();
+                final Sheets.Spreadsheets.Values.Append request =
+                        sheetsService.spreadsheets().values().append(userSheetID, range, requestBody);
+                request.setValueInputOption(valueInputOption);
+                request.setInsertDataOption(insertDataOption);
+                runAppendRequestOnSeparateThread(callingActivity, request);
+            } catch (Throwable t) {
+                System.out.println("Caught an exception: " + t.toString());
+
+            }
             //returns single FileID stored in List
             return fileID;
         }
@@ -895,10 +894,10 @@ public class Budgets {
         @Override
         protected void onPostExecute(List<String> output) {
             if (output == null || output.size() == 0) {
-                //mOutputText.setText("No results returned.");
-            } else {
-                //output.add(0, "Data retrieved using the Drive API:");
-                //mOutputText.setText(TextUtils.join("\n", output));
+                System.out.println("No results returned.");
+            } else if (newFileId != null){
+                budgetIDs.add(newFileId);
+                budgetNames.add(newFileName);
             }
         }
     }
