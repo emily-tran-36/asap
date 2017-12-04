@@ -177,6 +177,34 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             @Override
             public void onClick(View view){
                 //syncbutton
+                LayoutInflater inflater = (LayoutInflater) MainActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                View rootView = inflater.inflate(R.layout.fragment_main, (ViewGroup) findViewById(R.id.main_content) , false);
+
+                if (budgetManager.isReady()) {
+                    budgetList.addAll(budgetManager.getBudgetNames());
+                    accountsList.addAll(budgetManager.getAccountNames());
+
+                }
+
+                ListAdapter budgetAdapter = new ArrayAdapter<String>(mainActivity, R.layout.simplerow, budgetList);
+                final ListView mainListView = (ListView) rootView.findViewById( R.id.mainListView );
+                mainListView.setAdapter( budgetAdapter );
+
+                //click on list item
+                mainListView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+                    public void onItemClick(AdapterView<?> parent, View view,
+                                            int position, long id) {
+                        Intent myIntent = new Intent(view.getContext(), BudgetDetailsActivity.class);
+                        String  budgetName    = (String) mainListView.getItemAtPosition(position);
+
+                        myIntent.putExtra("Expense Details", budgetExpenseMap);
+                        myIntent.putExtra("Current Budget", budgetName);
+
+                        startActivity(myIntent);
+                    }
+                });
+                findViewById(R.id.main_content).postInvalidate();
+
             }});
 
         final com.github.clans.fab.FloatingActionButton account = (com.github.clans.fab.FloatingActionButton) findViewById(R.id.fabAccount);
@@ -546,9 +574,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             String newFileName = "test1";
             switch (request) {
                 case 0:
-                    MakeRequestTask debug = new MakeRequestTask(mCredential);
-                    Boolean flag = debug.isDriveServiceNull();
-                    debug.execute();
                     break;
                 case 1:
 
@@ -877,88 +902,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
         }
     }
 
-    /**
-     * An asynchronous task that handles the Drive API call.
-     * Placing the API calls in their own task ensures the UI stays responsive.
-     */
-    private class MakeRequestTask extends AsyncTask<Void, Void, List<String>> {
-        private com.google.api.services.drive.Drive mService = null;
-        private Exception mLastError = null;
-
-        public boolean isDriveServiceNull() {
-            return mService == null;
-        }
-
-        MakeRequestTask(GoogleAccountCredential credential) {
-            HttpTransport transport = AndroidHttp.newCompatibleTransport();
-            JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
-            mService = new com.google.api.services.drive.Drive.Builder(
-                    transport, jsonFactory, credential)
-                    .setApplicationName("Drive API Android Quickstart")
-                    .build();
-        }
-
-        /**
-         * Background task to call Drive API.
-         * @param params no parameters needed for this task.
-         */
-        @Override
-        protected List<String> doInBackground(Void... params) {
-            try {
-                return getDataFromApi();
-            } catch (Exception e) {
-                mLastError = e;
-                cancel(true);
-                return null;
-            }
-        }
-
-        /**
-         * Fetch a list of up to 10 file names and IDs.
-         * @return List of Strings describing files, or an empty list if no files
-         *         found.
-         * @throws IOException
-         */
-        private List<String> getDataFromApi() throws IOException {
-            // Get a list of up to 10 files.
-            List<String> fileInfo = new ArrayList<String>();
-            FileList result = mService.files().list()
-                    .setPageSize(10)
-                    .setFields("nextPageToken, files(id, name)")
-                    .execute();
-            List<File> files = result.getFiles();
-            if (files != null) {
-                for (File file : files) {
-                    fileInfo.add(String.format("%s (%s)\n",
-                            file.getName(), file.getId()));
-                }
-            }
-            return fileInfo;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            //mOutputText.setText("");
-            //mProgress.show();
-        }
-
-        @Override
-        protected void onPostExecute(List<String> output) {
-            //mProgress.hide();
-            if (output == null || output.size() == 0) {
-                //mOutputText.setText("No results returned.");
-            } else {
-                //output.add(0, "Data retrieved using the Drive API:");
-                //mOutputText.setText(TextUtils.join("\n", output));
-            }
-        }
-    }
-
-    //MRT3
-
-    //MRT4
-
-    //MRT5
     /**
      * Checks whether the device currently has a network connection.
      * @return true if the device has a network connection, false otherwise.
