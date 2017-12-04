@@ -576,4 +576,13 @@ public class Budgets {
         return null;
 
     }
+
+    public void addBudget(Activity callingActivity, String budgetName, Double budgetedAmount, String sourceAccount, List<String> users){
+
+    }
+
+    public void addAccount(Activity callingActivity, String accountName, Double initialAmount) {
+
+    }
+
 }
