@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 
 import com.google.api.client.extensions.android.http.AndroidHttp;
 
+import com.google.api.client.googleapis.batch.BatchRequest;
 import com.google.api.client.googleapis.batch.json.JsonBatchCallback;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
@@ -268,7 +269,7 @@ public class Budgets {
     }
 
     /**
-     * An asynchronous task that handles the Drive API call.
+     * An asynchronous task that adds a new writer to the user sheet
      * Placing the API calls in their own task ensures the UI stays responsive.
      */
     private class AddUserToBudgetTask extends AsyncTask<Void, Void, List<String>> {
@@ -315,7 +316,7 @@ public class Budgets {
          * @throws IOException
          */
         private List<String> getDataFromApi() throws IOException {
-            // Get a list of up to 10 files.
+            // Add a user as a writer to the userSheetID
             List<String> permissionResults = new ArrayList<String>();
 
             JsonBatchCallback<Permission> callback = new JsonBatchCallback<Permission>() {
@@ -339,9 +340,12 @@ public class Budgets {
                     .setType("user")
                     .setRole("writer")
                     .setEmailAddress(emailToAdd);
-            Permission res = mService.permissions().create(userSheetID, userPermission)
+
+            mService.permissions().create(userSheetID, userPermission)
                     .setFields("id")
                     .execute();
+
+
             return permissionResults;
         }
 
@@ -349,6 +353,102 @@ public class Budgets {
         protected void onPreExecute() {
             // Fetch email from text field and store it in class
             emailToAdd = "rob.misasi@utexas.edu"; // TODO: Replace with getter.
+        }
+
+        @Override
+        protected void onPostExecute(List<String> output) {
+            //mProgress.hide();
+            if (output == null || output.size() == 0) {
+                //mOutputText.setText("No results returned.");
+            } else {
+                //output.add(0, "Data retrieved using the Drive API:");
+                //mOutputText.setText(TextUtils.join("\n", output));
+            }
+        }
+    }
+
+    /**
+     * An asynchronous task that makes a file publicly readable.
+     * Placing the API calls in their own task ensures the UI stays responsive.
+     */
+    private class MakeFilePubliclyReadableTask extends AsyncTask<Void, Void, List<String>> {
+        private com.google.api.services.drive.Drive mService = null;
+        private Exception mLastError = null;
+        private String fileId;
+        private Activity callingActivity;
+
+        MakeFilePubliclyReadableTask(GoogleAccountCredential credential, Activity callingActivity, String fileId) {
+            this.fileId = fileId;
+            this.callingActivity = callingActivity;
+            HttpTransport transport = AndroidHttp.newCompatibleTransport();
+            JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
+            mService = new com.google.api.services.drive.Drive.Builder(
+                    transport, jsonFactory, credential)
+                    .setApplicationName("Asap")
+                    .build();
+        }
+
+        /**
+         * Background task to call Drive API.
+         *
+         * @param params no parameters needed for this task.
+         */
+        @Override
+        protected List<String> doInBackground(Void... params) {
+            try {
+                return getDataFromApi();
+            } catch (UserRecoverableAuthIOException e) {
+                callingActivity.startActivityForResult(e.getIntent(), REQUEST_AUTHORIZATION);
+                return null;
+            } catch (Exception e) {
+                mLastError = e;
+                cancel(true);
+                return null;
+            }
+        }
+
+        /**
+         * Fetch a list of up to 10 file names and IDs.
+         *
+         * @return List of Strings describing files, or an empty list if no files
+         * found.
+         * @throws IOException
+         */
+        private List<String> getDataFromApi() throws IOException {
+            // Add "anyone" as a reader
+            List<String> permissionResults = new ArrayList<String>();
+
+            JsonBatchCallback<Permission> callback = new JsonBatchCallback<Permission>() {
+                @Override
+                public void onFailure(GoogleJsonError e,
+                                      HttpHeaders responseHeaders)
+                        throws IOException {
+                    // Handle error
+                    System.err.println(e.getMessage());
+                }
+
+                @Override
+                public void onSuccess(Permission permission,
+                                      HttpHeaders responseHeaders)
+                        throws IOException {
+                    System.out.println("Permission ID: " + permission.getId());
+                }
+            };
+
+            Permission publicPermission = new Permission()
+                    .setType("anyone")
+                    .setRole("reader");
+            mService.permissions().create(userSheetID, publicPermission)
+                    .setFields("id")
+                    .execute();
+
+
+            return permissionResults;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            // Fetch email from text field and store it in class
         }
 
         @Override
