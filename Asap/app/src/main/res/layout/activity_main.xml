@@ -97,6 +97,14 @@
                 fab:fab_size="mini"
                 fab:fab_label="Add Account"/>
 
+            <com.github.clans.fab.FloatingActionButton
+                android:id="@+id/fabRefresh"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_sync_budgets"
+                fab:fab_size="mini"
+                fab:fab_label="Sync"/>
+
         </com.github.clans.fab.FloatingActionMenu>
 
 

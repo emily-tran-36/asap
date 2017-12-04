@@ -172,6 +172,13 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
         final Activity mainActivity = this;
 
+        final com.github.clans.fab.FloatingActionButton sync = (com.github.clans.fab.FloatingActionButton) findViewById(R.id.fabRefresh);
+        sync.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view){
+                //syncbutton
+            }});
+
         final com.github.clans.fab.FloatingActionButton account = (com.github.clans.fab.FloatingActionButton) findViewById(R.id.fabAccount);
         account.setOnClickListener(new View.OnClickListener(){
             @Override
