@@ -116,7 +116,9 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     static HashMap<String, String> budgetAmountMap = new HashMap<String, String>();
     static HashMap<String, String> budgetAccountMap = new HashMap<String, String>();
 
-    static HashMap<String, String> accountAmountMap = new HashMap<String, String>();
+    static HashMap<String,  HashMap<String,List<String>>> accountTransactionsMap = new HashMap<String,  HashMap<String,List<String>>>();
+    static HashMap<String, Integer> accountAmountRemaining = new HashMap<String, Integer>();
+
     //static HashMap<String, List<String>> expenseMap = new HashMap<String, List<String>>();
 
 
@@ -193,7 +195,19 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                                 }
 
                                 accountsList.add(Name.getText().toString());
-                                accountAmountMap.put(Name.getText().toString(), Amount.getText().toString());
+                                //HashMap<String,List<String>> curAccountTrans = accountTransactionsMap.get(Name.getText().toString());
+                                //List<String> curAccountTranList = curAccountTrans.get(Name.getText().toString());
+                               HashMap<String,List<String>> curAccountTrans = new  HashMap<String,List<String>>();
+                                List<String> curAccountTranList = new ArrayList<String>();
+
+                                curAccountTranList.add("Create account");
+                                curAccountTranList.add(Amount.getText().toString());
+
+                                curAccountTrans.put(Name.getText().toString(),curAccountTranList);
+
+                                accountTransactionsMap.put(Name.getText().toString(), curAccountTrans);
+
+                                accountAmountRemaining.put(Name.getText().toString(),Integer.parseInt(Amount.getText().toString()));
 
                                 popup.dismiss();
 
@@ -365,14 +379,18 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
                                 String accountsText = accounts.getSelectedItem().toString();
 
-                                
-                                //budgetList.add(Name.getText().toString());
 
-//                                ArrayList<String> tempList = new ArrayList<String>();
-//                                tempList.add("Test1");
-//                                tempList.add("Test2");
+                                HashMap<String, List<String>> curAccountTrans = accountTransactionsMap.get(accountsText);
+                                List<String> curAccountTranList = curAccountTrans.get(accountsText);
+                                curAccountTranList.add("Income: " + Name.getText().toString());
+                                curAccountTranList.add(Amount.getText().toString());
 
-                                //budgetMap.put(Name.getText().toString(),tempList);
+                                curAccountTrans.put(accountsText, curAccountTranList);
+                                accountTransactionsMap.put(accountsText, curAccountTrans);
+
+                                int currentAmountRemaining = accountAmountRemaining.get(accountsText);
+                                currentAmountRemaining += Integer.parseInt(Amount.getText().toString());
+                                accountAmountRemaining.put(accountsText,currentAmountRemaining);
 
                                 popup.dismiss();
 
@@ -641,10 +659,12 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                             Intent myIntent = new Intent(view.getContext(), AccountDetailsActivity.class);
                             String  accountName    = (String) mainListView.getItemAtPosition(position);
 
-//                            myIntent.putExtra("Expense Details", budgetExpenseMap);
-//                            myIntent.putExtra("Current Budget", accountName);
+                            myIntent.putExtra("Amount Remaining", accountAmountRemaining);
+                            myIntent.putExtra("Transaction Map", accountTransactionsMap);
+                            myIntent.putExtra("Account Name", accountName);
 
-                            startActivity(myIntent);
+
+                        startActivity(myIntent);
 
                     }
                 });
