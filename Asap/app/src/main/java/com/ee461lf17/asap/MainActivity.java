@@ -267,7 +267,14 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
                                 // Create new budget Name
                                 budgetManager.addNewBudget(mainActivity, Name.getText().toString(), Amount.getText().toString(), accountsText);
-                                // Update content with amount, account
+                                String[] emails = Emails.getText().toString().split(",");
+                                for(String s: emails) {
+                                    s = s.trim();
+                                    if (s == "") {
+                                        continue;
+                                    }
+                                    budgetManager.addUserToBudget(mainActivity, Name.getText().toString(), s);
+                                }
 
                                 budgetList.add(Name.getText().toString());
 

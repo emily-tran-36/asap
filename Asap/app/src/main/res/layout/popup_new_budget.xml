@@ -62,7 +62,7 @@
         android:ems="10"
         android:hint="Comma Separated Emails"
         android:textColor="#ffffff"
-        android:inputType="text|number" />
+        android:inputType="text" />
 
     <TableRow
         android:layout_width="match_parent"

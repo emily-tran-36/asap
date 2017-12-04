@@ -285,8 +285,8 @@ public class Budgets {
      * @param callingActivity
      * @param email email to give permissions to
      */
-    public void addUserToBudget(Activity callingActivity, String email) {
-        AddUserToBudgetTask task = new AddUserToBudgetTask(credential, callingActivity, email);
+    public void addUserToBudget(Activity callingActivity,String budgetName, String email) {
+        AddUserToBudgetTask task = new AddUserToBudgetTask(credential, callingActivity, budgetName, email);
         task.execute();
     }
 
@@ -338,11 +338,13 @@ public class Budgets {
         private com.google.api.services.drive.Drive mService = null;
         private Exception mLastError = null;
         private String emailToAdd;
+        private String budgetName;
         private Activity callingActivity;
 
-        AddUserToBudgetTask(GoogleAccountCredential credential, Activity callingActivity, String emailToAdd) {
+        AddUserToBudgetTask(GoogleAccountCredential credential, Activity callingActivity, String budgetName, String emailToAdd) {
             this.emailToAdd = emailToAdd;
             this.callingActivity = callingActivity;
+            this.budgetName = budgetName;
             HttpTransport transport = AndroidHttp.newCompatibleTransport();
             JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
             mService = new com.google.api.services.drive.Drive.Builder(
@@ -380,6 +382,7 @@ public class Budgets {
         private List<String> getDataFromApi() throws IOException {
             // Add a user as a writer to the userSheetID
             List<String> permissionResults = new ArrayList<String>();
+            String budgetId = budgetNameToID(budgetName);
 
             JsonBatchCallback<Permission> callback = new JsonBatchCallback<Permission>() {
                 @Override
@@ -403,7 +406,7 @@ public class Budgets {
                     .setRole("writer")
                     .setEmailAddress(emailToAdd);
 
-            mService.permissions().create(userSheetID, userPermission)
+            mService.permissions().create(budgetId, userPermission)
                     .setFields("id")
                     .execute();
 
@@ -880,10 +883,8 @@ public class Budgets {
 
             ValueRange addToUserSheetRequestBody = new ValueRange();
             addToUserSheetRequestBody.set("range", "A1");
-            String accountStr;
-            if(account.equalsIgnoreCase("No accounts yet.")) {
+            String acct = account.equalsIgnoreCase("No accounts yet.") ? "" : account;
 
-            }
             Object[][] ray = {{newFileName, newFileId}};
             addToUserSheetRequestBody.set("values", new ArrayList<Object>(Arrays.asList(ray)));
             Sheets sheetsService;
@@ -902,7 +903,7 @@ public class Budgets {
             Calendar cal = new GregorianCalendar();
             String date = "'" + cal.get(Calendar.MONTH) + "/" + cal.get(Calendar.DAY_OF_MONTH) + "/" + cal.get(Calendar.YEAR);
             insertAmountAndAccountRequestBody.set("range", "A1");
-            Object[][] row = {{date ,amountToAdd,"0","0", account}};
+            Object[][] row = {{date ,amountToAdd,"0","0", acct}};
             insertAmountAndAccountRequestBody.set("values", new ArrayList<Object>(Arrays.asList(row)));
             try {
                 sheetsService = createSheetsService();
@@ -1008,6 +1009,26 @@ public class Budgets {
                 sheetsService = createSheetsService();
                 final Sheets.Spreadsheets.Values.Append request =
                         sheetsService.spreadsheets().values().append(newFileID, range, addNewAccountRequestBody);
+                request.setValueInputOption(valueInputOption);
+                request.setInsertDataOption(insertDataOption);
+                runAppendRequestOnSeparateThread(callingActivity, request);
+            } catch (Throwable t) {
+                System.out.println("Caught an exception: " + t.toString());
+            }
+
+            // Add account to userSheet
+
+            ValueRange addToUserSheetRequestBody = new ValueRange();
+            addToUserSheetRequestBody.set("range", "A1");
+
+
+            Object[][] row = {{"","",newFileName, newFileID}};
+            addToUserSheetRequestBody.set("values", new ArrayList<Object>(Arrays.asList(row)));
+
+            try {
+                sheetsService = createSheetsService();
+                final Sheets.Spreadsheets.Values.Append request =
+                        sheetsService.spreadsheets().values().append(userSheetID, range, addToUserSheetRequestBody);
                 request.setValueInputOption(valueInputOption);
                 request.setInsertDataOption(insertDataOption);
                 runAppendRequestOnSeparateThread(callingActivity, request);
