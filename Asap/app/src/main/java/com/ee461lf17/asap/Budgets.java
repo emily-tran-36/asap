@@ -42,6 +42,7 @@ import static com.ee461lf17.asap.MainActivity.REQUEST_AUTHORIZATION;
 
 public class Budgets {
     private static final String HOME_ID = "1rf4l4FVyEMBKhRdwFEGz-rkl1zcvDImSModS5IerNA0";
+    private static final String BUDGET_TEMPLATE = "1Vl9m-oPg0w4QmXz-29POvEN7FHCl34feXvGqWplpDHw";
     private static final ExecutorService executor = Executors.newFixedThreadPool(1);
 
     private GoogleAccountCredential credential;
@@ -190,20 +191,26 @@ public class Budgets {
         }
     }
     //copy sheets file
-    public static String copyFile(Drive service, String originFileId,
+    public static String copyFile(Activity callingActivity, Drive service, String originFileId,
                                  String copyTitle) {
         File copiedFile = new File();
         copiedFile.setName(copyTitle);
         try {
-            return service.files().copy(originFileId, copiedFile).execute().getId();
+            File f = service.files().copy(originFileId, copiedFile).execute();
+            return f.getId();
+        } catch (UserRecoverableAuthIOException e) {
+            System.out.println("Trying again for permissions");
+            callingActivity.startActivityForResult(e.getIntent(), REQUEST_AUTHORIZATION);
         } catch (IOException e) {
             System.out.println("An error occurred: " + e);
+        } catch (Exception e) {
+            System.out.println("Error");
         }
         return null;
     }
 
-    public static String createFile(Drive service, String originFileID, String copyTitle){
-        return copyFile(service, originFileID, copyTitle);
+    public static String createFile(Activity callingActivity, Drive service, String originFileID, String copyTitle){
+        return copyFile(callingActivity, service, originFileID, copyTitle);
     }
 
 
@@ -321,40 +328,7 @@ public class Budgets {
      * @param budgetName
      */
     public void addNewBudget(Activity callingActivity, String budgetName) {
-
-        // Initialize variables to search for ExampleBudgetSimple
-        HttpTransport transport = AndroidHttp.newCompatibleTransport();
-        JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
-        String pageToken = null;
-        String fileIdToCopy = null;
-        Drive mService = new com.google.api.services.drive.Drive.Builder(
-                transport, jsonFactory, credential)
-                .setApplicationName("Asap")
-                .build();
-        try {
-            do {
-                Drive.Files.List req =  mService.files().list()
-                        .setQ("title contains 'Example'")
-                        .setSpaces("drive")
-                        .setPageToken(pageToken);
-
-                // Search drive account for given parameters
-                Future<FileList> res = runDriveSearchRequestOnSeparateThread(callingActivity, req);
-                FileList result = res.get();
-                for (File file : result.getFiles()) {
-                    if (file.getName().contains("ExampleBudgetSimple")){
-                        fileIdToCopy = file.getId();
-                    }
-                }
-                pageToken = result.getNextPageToken();
-            } while (pageToken != null);
-        }
-        catch (IOException e) {
-            System.out.println("IOException while trying to find master sheet");
-        }
-        catch(Exception e) {
-            System.out.println(e.toString());
-        }
+        String fileIdToCopy = Budgets.BUDGET_TEMPLATE;
         MakeRequestTaskCreate task = new MakeRequestTaskCreate(credential, callingActivity, fileIdToCopy, budgetName);
         task.execute();
     }
@@ -830,7 +804,7 @@ public class Budgets {
         private List<String> getDataFromApi() throws IOException {
             // Get a list of up to 10 files.
             List<String> fileID = new ArrayList<String>();
-            fileID.add(Budgets.copyFile(mService, oldFileID, newFileName));
+            fileID.add(Budgets.copyFile(callingActivity, mService, oldFileID, newFileName));
             //returns a single fileID in a list
             return fileID; //tfw you return a single element list because doInBackground complains
         }
@@ -907,7 +881,7 @@ public class Budgets {
         private List<String> getDataFromApi() throws IOException {
             // Get a list of up to 10 files.
             List<String> fileID = new ArrayList<String>();
-            fileID.add(Budgets.createFile(mService, oldFileID, newFileName));
+            fileID.add(Budgets.createFile(callingActivity, mService, oldFileID, newFileName));
             //returns single FileID stored in List
             return fileID;
         }
