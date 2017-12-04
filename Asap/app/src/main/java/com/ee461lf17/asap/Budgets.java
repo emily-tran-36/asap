@@ -17,6 +17,7 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
+import com.google.api.services.drive.model.FileList;
 import com.google.api.services.drive.model.Permission;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.ValueRange;
@@ -117,7 +118,7 @@ public class Budgets {
                 String comp = (String)l.get(0);
                 if(comp.toLowerCase().equals(userName.toLowerCase())){
                     if(l.size() < 2){
-                        return createNewMasterSheetFor(userName);
+                        return createNewMasterSheetFor(callingActivity, userName);
                     }
                     else {
                         return (String)(l.get(1));
@@ -128,14 +129,15 @@ public class Budgets {
             System.out.println("Something went wrong " + e);
             return null;
         }
-        return createNewMasterSheetFor(userName);
+        return createNewMasterSheetFor(callingActivity, userName);
     }
 
     //Will add account name to the home sheet, then create a new, empty master sheet,
     //add its ID to the home sheet, and return the ID
-    private static String createNewMasterSheetFor(String accountName) {
+    private String createNewMasterSheetFor(Activity callingActivity, String accountName) {
         //TODO: implement with real code
-        return null;
+        createNewBudget(callingActivity, accountName + "_master");
+        return accountName+ "_master";
     }
 
     //Adds an expenditure to the budget sheet corresponding to the given ID
@@ -252,6 +254,31 @@ public class Budgets {
         return executor.submit(task);
     }
 
+    private static Future<FileList> runDriveSearchRequestOnSeparateThread(final Activity callingActivity, final Drive.Files.List request) {
+        Callable<FileList> task = new Callable<FileList>() {
+            @Override
+            public FileList call() throws Exception {
+                boolean retry = true;
+                FileList response = null;
+                while(retry){
+                    try{
+                        response = request.execute();
+                        retry = false;
+                        return response;
+                    } catch (UserRecoverableAuthIOException e) {
+                        System.out.println("Trying again for permissions");
+                        callingActivity.startActivityForResult(e.getIntent(), REQUEST_AUTHORIZATION);
+                    } catch (Throwable e) {
+                        retry = false;
+                        System.out.println("Was unable to fetch from sheet " + e);
+                    }
+                }
+                return response;
+            }
+        };
+        return executor.submit(task);
+    }
+
     private Sheets createSheetsService() throws IOException, GeneralSecurityException {
         HttpTransport httpTransport = AndroidHttp.newCompatibleTransport();
         JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
@@ -261,11 +288,87 @@ public class Budgets {
                 .build();
     }
 
+    /**************************
+     *                        *
+     *  Task Helper Methods   *
+     *                        *
+     *************************/
 
+    /**
+     * Grant write permissions to user
+     * @param callingActivity
+     * @param email email to give permissions to
+     */
     public void addUserToBudget(Activity callingActivity, String email) {
-
         AddUserToBudgetTask task = new AddUserToBudgetTask(credential, callingActivity, email);
         task.execute();
+    }
+
+    /**
+     * Create a new budget. Should only be used by the Budgets constructor
+     * @param callingActivity
+     * @param budgetName name of budget to add
+     */
+    private void createNewBudget(Activity callingActivity, String budgetName) {
+        MakeRequestTaskCreate task = new MakeRequestTaskCreate(credential, callingActivity, userSheetID, budgetName);
+        task.execute();
+    }
+
+    /**
+     * Public version of createNewBudget. Used to copy the "ExampleBudgetSimple" sheet to create a
+     * budget
+     * @param callingActivity
+     * @param budgetName
+     */
+    public void addNewBudget(Activity callingActivity, String budgetName) {
+
+        // Initialize variables to search for ExampleBudgetSimple
+        HttpTransport transport = AndroidHttp.newCompatibleTransport();
+        JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
+        String pageToken = null;
+        String fileIdToCopy = null;
+        Drive mService = new com.google.api.services.drive.Drive.Builder(
+                transport, jsonFactory, credential)
+                .setApplicationName("Asap")
+                .build();
+        try {
+            do {
+                Drive.Files.List req =  mService.files().list()
+                        .setQ("title contains 'Example'")
+                        .setSpaces("drive")
+                        .setPageToken(pageToken);
+
+                // Search drive account for given parameters
+                Future<FileList> res = runDriveSearchRequestOnSeparateThread(callingActivity, req);
+                FileList result = res.get();
+                for (File file : result.getFiles()) {
+                    if (file.getName().contains("ExampleBudgetSimple")){
+                        fileIdToCopy = file.getId();
+                    }
+                }
+                pageToken = result.getNextPageToken();
+            } while (pageToken != null);
+        }
+        catch (IOException e) {
+            System.out.println("IOException while trying to find master sheet");
+        }
+        catch(Exception e) {
+            System.out.println(e.toString());
+        }
+        MakeRequestTaskCreate task = new MakeRequestTaskCreate(credential, callingActivity, fileIdToCopy, budgetName);
+        task.execute();
+    }
+
+    /**
+     * Copy an existing budget into a new file
+     * @param callingActivity
+     * @param fileNameToCopy
+     * @param newFileName
+     */
+    public void copyBudgetSheet(Activity callingActivity, String fileNameToCopy, String newFileName) {
+        int budgetIndex = budgetNames.indexOf(fileNameToCopy);
+        String budgetId = budgetIDs.get(budgetIndex);
+        MakeRequestTaskCopy task = new MakeRequestTaskCopy(credential, callingActivity, budgetId, newFileName);
     }
 
     /**
@@ -352,7 +455,7 @@ public class Budgets {
         @Override
         protected void onPreExecute() {
             // Fetch email from text field and store it in class
-            emailToAdd = "rob.misasi@utexas.edu"; // TODO: Replace with getter.
+            //emailToAdd = "rob.misasi@utexas.edu"; // TODO: Replace with getter.
         }
 
         @Override
@@ -675,5 +778,154 @@ public class Budgets {
         }
         return null;
 
+    }
+
+    //MRT1
+    private class MakeRequestTaskCopy extends AsyncTask<Void, Void, List<String>> {
+        private com.google.api.services.drive.Drive mService = null;
+        private Exception mLastError = null;
+        private String oldFileID = null;
+        private String newFileName = null;
+        private Activity callingActivity;
+        public boolean isDriveServiceNull() {
+            return mService == null;
+        }
+
+        MakeRequestTaskCopy(GoogleAccountCredential credential, Activity callingActivity, String oldFileID, String newFileName) {
+            this.callingActivity = callingActivity;
+            HttpTransport transport = AndroidHttp.newCompatibleTransport();
+            JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
+            mService = new com.google.api.services.drive.Drive.Builder(
+                    transport, jsonFactory, credential)
+                    .setApplicationName("Asap")
+                    .build();
+            this.oldFileID = oldFileID;
+            this.newFileName = newFileName;
+        }
+
+        /**
+         * Background task to call Drive API.
+         * @param params no parameters needed for this task.
+         */
+        @Override
+        protected List<String> doInBackground(Void... params) {
+            try {
+                return getDataFromApi();
+            } catch (UserRecoverableAuthIOException e) {
+                callingActivity.startActivityForResult(e.getIntent(), REQUEST_AUTHORIZATION);
+                return null;
+            } catch (Exception e) {
+                mLastError = e;
+                cancel(true);
+                return null;
+            }
+        }
+
+        /**
+         * Fetch a list of up to 10 file names and IDs.
+         * @return List of Strings describing files, or an empty list if no files
+         *         found.
+         * @throws IOException
+         */
+        private List<String> getDataFromApi() throws IOException {
+            // Get a list of up to 10 files.
+            List<String> fileID = new ArrayList<String>();
+            fileID.add(Budgets.copyFile(mService, oldFileID, newFileName));
+            //returns a single fileID in a list
+            return fileID; //tfw you return a single element list because doInBackground complains
+        }
+
+        @Override
+        protected void onPreExecute() {
+            //mOutputText.setText("");
+            //mProgress.show();
+        }
+
+        @Override
+        protected void onPostExecute(List<String> output) {
+            if (output == null || output.size() == 0) {
+                //mOutputText.setText("No results returned.");
+            } else {
+                //output.add(0, "Data retrieved using the Drive API:");
+                //mOutputText.setText(TextUtils.join("\n", output));
+            }
+        }
+    }
+
+    //MRT2
+    private class MakeRequestTaskCreate extends AsyncTask<Void, Void, List<String>> {
+        private com.google.api.services.drive.Drive mService = null;
+        private Activity callingActivity;
+        private Exception mLastError = null;
+        private String oldFileID = null;
+        private String newFileName = null;
+        public boolean isDriveServiceNull() {
+            return mService == null;
+        }
+
+        MakeRequestTaskCreate(GoogleAccountCredential credential, Activity callingActivity, String oldFileID, String newFileName) {
+
+            HttpTransport transport = AndroidHttp.newCompatibleTransport();
+            this.callingActivity = callingActivity;
+            JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
+            this.oldFileID=oldFileID;
+            this.newFileName=newFileName;
+            mService = new com.google.api.services.drive.Drive.Builder(
+                    transport, jsonFactory, credential)
+                    .setApplicationName("Asap")
+                    .build();
+
+        }
+
+        /**
+         * Background task to call Drive API.
+         * @param params no parameters needed for this task.
+         */
+        @Override
+        protected List<String> doInBackground(Void... params) {
+            try {
+                List<String> fileId = getDataFromApi();
+                budgetIDs.add(fileId.get(0));
+                budgetNames.add(newFileName);
+                return fileId;
+            } catch (UserRecoverableAuthIOException e) {
+                callingActivity.startActivityForResult(e.getIntent(), REQUEST_AUTHORIZATION);
+                return null;
+            }catch (Exception e) {
+                mLastError = e;
+                cancel(true);
+                return null;
+            }
+        }
+
+        /**
+         * Fetch a list of up to 10 file names and IDs.
+         * @return List of Strings describing files, or an empty list if no files
+         *         found.
+         * @throws IOException
+         */
+        private List<String> getDataFromApi() throws IOException {
+            // Get a list of up to 10 files.
+            List<String> fileID = new ArrayList<String>();
+            fileID.add(Budgets.createFile(mService, oldFileID, newFileName));
+            //returns single FileID stored in List
+            return fileID;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            //mOutputText.setText("");
+            //mProgress.show();
+        }
+
+        @Override
+        protected void onPostExecute(List<String> output) {
+            if (output == null || output.size() == 0) {
+                //mOutputText.setText("No results returned.");
+            } else {
+                //output.add(0, "Data retrieved using the Drive API:");
+                //mOutputText.setText(TextUtils.join("\n", output));
+            }
+        }
     }
 }
