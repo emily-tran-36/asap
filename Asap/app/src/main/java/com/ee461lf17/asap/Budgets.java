@@ -15,6 +15,7 @@ import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 
+import com.google.api.client.util.DateTime;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
@@ -26,6 +27,8 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -42,7 +45,8 @@ import static com.ee461lf17.asap.MainActivity.REQUEST_AUTHORIZATION;
 
 public class Budgets {
     private static final String HOME_ID = "1rf4l4FVyEMBKhRdwFEGz-rkl1zcvDImSModS5IerNA0";
-    private static final String BUDGET_TEMPLATE = "1Vl9m-oPg0w4QmXz-29POvEN7FHCl34feXvGqWplpDHw";
+    private static final String BUDGET_TEMPLATE = "1uRJFJxTv9KP-WcI6gpLVcnRUmg-ISAu0rQfuZRkfrpY";
+    private static final String ACCOUNT_TEMPLATE = "1JPABuXbvYn4u03_oa5KBf2R6ON2OoN4hoKDgtiTKgX8";
     private static final ExecutorService executor = Executors.newFixedThreadPool(1);
 
     private GoogleAccountCredential credential;
@@ -292,7 +296,7 @@ public class Budgets {
      * @param budgetName name of budget to add
      */
     private void createNewBudget(Activity callingActivity, String budgetName) {
-        MakeRequestTaskCreate task = new MakeRequestTaskCreate(credential, callingActivity, userSheetID, budgetName);
+        MakeRequestTaskCreate task = new MakeRequestTaskCreate(credential, callingActivity, userSheetID, budgetName, "1000", "");
         task.execute();
     }
 
@@ -302,10 +306,11 @@ public class Budgets {
      * @param callingActivity
      * @param budgetName
      */
-    public void addNewBudget(Activity callingActivity, String budgetName) {
+    public void addNewBudget(Activity callingActivity, String budgetName, String amount, String account) {
         String fileIdToCopy = Budgets.BUDGET_TEMPLATE;
-        MakeRequestTaskCreate task = new MakeRequestTaskCreate(credential, callingActivity, fileIdToCopy, budgetName);
+        MakeRequestTaskCreate task = new MakeRequestTaskCreate(credential, callingActivity, fileIdToCopy, budgetName, amount, account);
         task.execute();
+
 
     }
 
@@ -810,17 +815,21 @@ public class Budgets {
         private String oldFileID = null;
         private String newFileName = null;
         private String newFileId = null;
+        private String amountToAdd = null;
+        private String account = null;
         public boolean isDriveServiceNull() {
             return mService == null;
         }
 
-        MakeRequestTaskCreate(GoogleAccountCredential credential, Activity callingActivity, String oldFileID, String newFileName) {
+        MakeRequestTaskCreate(GoogleAccountCredential credential, Activity callingActivity, String oldFileID, String newFileName, String amountToAdd, String account) {
 
             HttpTransport transport = AndroidHttp.newCompatibleTransport();
             this.callingActivity = callingActivity;
             JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
             this.oldFileID=oldFileID;
             this.newFileName=newFileName;
+            this.amountToAdd = amountToAdd;
+            this.account = account;
             mService = new com.google.api.services.drive.Drive.Builder(
                     transport, jsonFactory, credential)
                     .setApplicationName("Asap")
@@ -865,22 +874,43 @@ public class Budgets {
             String valueInputOption = "USER_ENTERED";
             String insertDataOption = "INSERT_ROWS";
 
-            ValueRange requestBody = new ValueRange();
-            requestBody.set("range", "A1");
+            ValueRange addToUserSheetRequestBody = new ValueRange();
+            addToUserSheetRequestBody.set("range", "A1");
+            String accountStr;
+            if(account.equalsIgnoreCase("No accounts yet.")) {
+
+            }
             Object[][] ray = {{newFileName, newFileId}};
-            requestBody.set("values", new ArrayList<Object>(Arrays.asList(ray)));
+            addToUserSheetRequestBody.set("values", new ArrayList<Object>(Arrays.asList(ray)));
             Sheets sheetsService;
             try {
                 sheetsService = createSheetsService();
                 final Sheets.Spreadsheets.Values.Append request =
-                        sheetsService.spreadsheets().values().append(userSheetID, range, requestBody);
+                        sheetsService.spreadsheets().values().append(userSheetID, range, addToUserSheetRequestBody);
                 request.setValueInputOption(valueInputOption);
                 request.setInsertDataOption(insertDataOption);
                 runAppendRequestOnSeparateThread(callingActivity, request);
             } catch (Throwable t) {
                 System.out.println("Caught an exception: " + t.toString());
-
             }
+
+            ValueRange insertAmountAndAccountRequestBody = new ValueRange();
+            Calendar cal = new GregorianCalendar();
+            String date = "'" + cal.get(Calendar.MONTH) + "/" + cal.get(Calendar.DAY_OF_MONTH) + "/" + cal.get(Calendar.YEAR);
+            insertAmountAndAccountRequestBody.set("range", "A1");
+            Object[][] row = {{date ,amountToAdd,"0","0", account}};
+            insertAmountAndAccountRequestBody.set("values", new ArrayList<Object>(Arrays.asList(row)));
+            try {
+                sheetsService = createSheetsService();
+                final Sheets.Spreadsheets.Values.Append request =
+                        sheetsService.spreadsheets().values().append(newFileId, range, insertAmountAndAccountRequestBody);
+                request.setValueInputOption(valueInputOption);
+                request.setInsertDataOption(insertDataOption);
+                runAppendRequestOnSeparateThread(callingActivity, request);
+            } catch (Throwable t) {
+                System.out.println("Caught an exception: " + t.toString());
+            }
+
             //returns single FileID stored in List
             return fileID;
         }
@@ -901,13 +931,4 @@ public class Budgets {
             }
         }
     }
-
-    public void addBudget(Activity callingActivity, String budgetName, Double budgetedAmount, String sourceAccount, List<String> users){
-
-    }
-
-    public void addAccount(Activity callingActivity, String accountName, Double initialAmount) {
-
-    }
-
 }

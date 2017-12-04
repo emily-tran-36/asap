@@ -172,7 +172,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
         final Activity mainActivity = this;
 
-        com.github.clans.fab.FloatingActionButton account = (com.github.clans.fab.FloatingActionButton) findViewById(R.id.fabAccount);
+        final com.github.clans.fab.FloatingActionButton account = (com.github.clans.fab.FloatingActionButton) findViewById(R.id.fabAccount);
         account.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
@@ -196,6 +196,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                                 if(accountsList.contains("No accounts yet.")){
                                     accountsList.remove("No accounts yet.");
                                 }
+
+
 
                                 accountsList.add(Name.getText().toString());
                                 //HashMap<String,List<String>> curAccountTrans = accountTransactionsMap.get(Name.getText().toString());
@@ -263,13 +265,16 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
                                 final String accountsText = accounts.getSelectedItem().toString();
 
-                                budgetManager.addNewBudget(mainActivity, Name.getText().toString());
+                                // Create new budget Name
+                                budgetManager.addNewBudget(mainActivity, Name.getText().toString(), Amount.getText().toString(), accountsText);
+                                // Update content with amount, account
 
                                 budgetList.add(Name.getText().toString());
 
                                 budgetAccountMap.put(Name.getText().toString(), accountsText);
                                 budgetAmountMap.put(Name.getText().toString(), Amount.getText().toString());
                                 popup.dismiss();
+
 
                             }
 
