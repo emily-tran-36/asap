@@ -306,12 +306,16 @@ public class Budgets {
      * @param callingActivity
      * @param budgetName
      */
-    public void addNewBudget(Activity callingActivity, String budgetName, String amount, String account) {
+    public void addNewBudget(Activity callingActivity, String budgetName, String amount, String accountName) {
         String fileIdToCopy = Budgets.BUDGET_TEMPLATE;
-        MakeRequestTaskCreate task = new MakeRequestTaskCreate(credential, callingActivity, fileIdToCopy, budgetName, amount, account);
+        MakeRequestTaskCreate task = new MakeRequestTaskCreate(credential, callingActivity, fileIdToCopy, budgetName, amount, accountName);
         task.execute();
+    }
 
-
+    public void addNewAccount(Activity callingActivity, String accountName, String amount) {
+        String fileIdToCopy = ACCOUNT_TEMPLATE;
+        MakeRequestTaskAddAccount task = new MakeRequestTaskAddAccount(credential, callingActivity, fileIdToCopy, accountName, amount);
+        task.execute();
     }
 
     /**
@@ -931,4 +935,105 @@ public class Budgets {
             }
         }
     }
+
+    //MRT3
+    private class MakeRequestTaskAddAccount extends AsyncTask<Void, Void, List<String>> {
+        private com.google.api.services.drive.Drive mService = null;
+        private Exception mLastError = null;
+        private String oldFileID = null;
+        private String newFileName = null;
+        private String newFileID = null;
+        private String amount = null;
+        private Activity callingActivity;
+        public boolean isDriveServiceNull() {
+            return mService == null;
+        }
+
+        MakeRequestTaskAddAccount(GoogleAccountCredential credential, Activity callingActivity, String oldFileID, String newFileName, String amount) {
+            this.callingActivity = callingActivity;
+            HttpTransport transport = AndroidHttp.newCompatibleTransport();
+            JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
+            mService = new com.google.api.services.drive.Drive.Builder(
+                    transport, jsonFactory, credential)
+                    .setApplicationName("Asap")
+                    .build();
+            this.oldFileID = oldFileID;
+            this.newFileName = newFileName;
+            this.amount = amount;
+        }
+
+        /**
+         * Background task to call Drive API.
+         * @param params no parameters needed for this task.
+         */
+        @Override
+        protected List<String> doInBackground(Void... params) {
+            try {
+                return getDataFromApi();
+            } catch (UserRecoverableAuthIOException e) {
+                callingActivity.startActivityForResult(e.getIntent(), REQUEST_AUTHORIZATION);
+                return null;
+            } catch (Exception e) {
+                mLastError = e;
+                cancel(true);
+                return null;
+            }
+        }
+
+        /**
+         * Fetch a list of up to 10 file names and IDs.
+         * @return List of Strings describing files, or an empty list if no files
+         *         found.
+         * @throws IOException
+         */
+        private List<String> getDataFromApi() throws IOException {
+            // Get a list of up to 10 files.
+            List<String> fileID = new ArrayList<String>();
+            newFileID = Budgets.copyFile(callingActivity, mService, oldFileID, newFileName);
+            fileID.add(newFileID);
+
+            // Add budget to userSheet
+            String range = "A1";
+            String valueInputOption = "USER_ENTERED";
+            String insertDataOption = "INSERT_ROWS";
+
+            ValueRange addNewAccountRequestBody = new ValueRange();
+            addNewAccountRequestBody.set("range", "A1");
+            String accountStr;
+
+            Object[][] ray = {{newFileName, "","","",amount}};
+            addNewAccountRequestBody.set("values", new ArrayList<Object>(Arrays.asList(ray)));
+            Sheets sheetsService;
+            try {
+                sheetsService = createSheetsService();
+                final Sheets.Spreadsheets.Values.Append request =
+                        sheetsService.spreadsheets().values().append(newFileID, range, addNewAccountRequestBody);
+                request.setValueInputOption(valueInputOption);
+                request.setInsertDataOption(insertDataOption);
+                runAppendRequestOnSeparateThread(callingActivity, request);
+            } catch (Throwable t) {
+                System.out.println("Caught an exception: " + t.toString());
+            }
+            //returns a single fileID in a list
+            return fileID; //tfw you return a single element list because doInBackground complains
+        }
+
+        @Override
+        protected void onPreExecute() {
+            //mOutputText.setText("");
+            //mProgress.show();
+        }
+
+        @Override
+        protected void onPostExecute(List<String> output) {
+            if (output == null || output.size() == 0) {
+                //mOutputText.setText("No results returned.");
+            } else if (newFileID != null) {
+                accountIDs.add(newFileID);
+                accountNames.add(newFileName);
+            }
+        }
+    }
+
+
 }

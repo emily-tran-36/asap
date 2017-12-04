@@ -197,7 +197,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                                     accountsList.remove("No accounts yet.");
                                 }
 
-
+                                budgetManager.addNewAccount(mainActivity, Name.getText().toString(), Amount.getText().toString());
 
                                 accountsList.add(Name.getText().toString());
                                 //HashMap<String,List<String>> curAccountTrans = accountTransactionsMap.get(Name.getText().toString());
@@ -332,6 +332,10 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                                 final String categoryText = Category.getSelectedItem().toString();
                                 final String budgetText = Budget.getSelectedItem().toString();
 
+                                budgetManager.addExpenditure(mainActivity,budgetText,categoryText,
+                                        Double.parseDouble(Amount.getText().toString()),
+                                        Name.getText().toString(), "12/4/2017");
+
                                 ArrayList<String> tempList = new ArrayList<String>();
                                 tempList.add(Amount.getText().toString());
                                 tempList.add(categoryText);
@@ -389,6 +393,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
                                 String accountsText = accounts.getSelectedItem().toString();
 
+                                budgetManager.addMoneyToAccount(mainActivity, accountsText, Double.parseDouble(Amount.getText().toString()), Name.getText().toString(), "'12/4/2017");
 
                                 HashMap<String, List<String>> curAccountTrans = accountTransactionsMap.get(accountsText);
                                 List<String> curAccountTranList = curAccountTrans.get(accountsText);
