@@ -16,7 +16,8 @@
         <TableRow
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="#8EA7B2">
+            android:background="#8EA7B2"
+            android:padding="5dp">
 
             <TextView
                 android:id="@+id/textView3"
@@ -33,7 +34,8 @@
                 android:layout_height="wrap_content"
                 android:text="Price"
                 android:textColor="#ffffff"
-                android:textSize="18dp"/>
+                android:textSize="18dp"
+                android:layout_marginRight="10dp"/>
 
             <TextView
                 android:id="@+id/textView4"

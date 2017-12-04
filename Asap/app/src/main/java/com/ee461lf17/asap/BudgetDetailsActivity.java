@@ -49,7 +49,8 @@ public class BudgetDetailsActivity extends AppCompatActivity {
                 else{
                     greyEntry = true;
                 }
-
+                float density = this.getResources().getDisplayMetrics().density;
+                tableRow.setPadding((int)density*5, (int)density*5, (int)density*5, (int)density*5);
                 tableRow.setGravity(Gravity.LEFT);
                 tableRow.setLayoutParams(new TableRow.LayoutParams(
                         TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
@@ -59,11 +60,10 @@ public class BudgetDetailsActivity extends AppCompatActivity {
                 textView2.setText(curDetails.get(1));
                 textView3.setText(curDetails.get(2));
 
-                float density = this.getResources().getDisplayMetrics().density;
-                textView.setTextSize((int)density*18);
-                textView1.setTextSize((int)density*18);
-                textView2.setTextSize((int)density*18);
-                textView3.setTextSize((int)density*18);
+                textView.setTextSize(18);
+                textView1.setTextSize(18);
+                textView2.setTextSize(18);
+                textView3.setTextSize(18);
 
 
                 textView.setGravity(Gravity.LEFT);
