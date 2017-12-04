@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 
 import com.google.api.client.extensions.android.http.AndroidHttp;
 
+import com.google.api.client.googleapis.batch.BatchRequest;
 import com.google.api.client.googleapis.batch.json.JsonBatchCallback;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
@@ -335,13 +336,24 @@ public class Budgets {
                 }
             };
 
+            BatchRequest batch = mService.batch();
+            Permission publicPermission = new Permission()
+                    .setType("anyone")
+                    .setRole("reader");
+
             Permission userPermission = new Permission()
                     .setType("user")
                     .setRole("writer")
                     .setEmailAddress(emailToAdd);
-            Permission res = mService.permissions().create(userSheetID, userPermission)
+
+            mService.permissions().create(userSheetID, publicPermission)
                     .setFields("id")
-                    .execute();
+                    .queue(batch, callback);
+            mService.permissions().create(userSheetID, userPermission)
+                    .setFields("id")
+                    .queue(batch, callback);
+
+            batch.execute();
             return permissionResults;
         }
 
