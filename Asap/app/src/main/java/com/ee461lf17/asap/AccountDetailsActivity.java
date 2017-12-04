@@ -1,5 +1,6 @@
 package com.ee461lf17.asap;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Gravity;
@@ -29,6 +30,7 @@ public class AccountDetailsActivity extends AppCompatActivity {
 
 
         TableLayout tableLayout = (TableLayout) findViewById(R.id.accountDetailTable);
+        boolean greyEntry = false;
 
         Set<String> expensesKeySet =  transMap.keySet();
         for(String s: expensesKeySet){
@@ -46,6 +48,16 @@ public class AccountDetailsActivity extends AppCompatActivity {
                     TextView textView2 = new TextView(this);
 
                     TableRow tableRow = new TableRow(this);
+
+                    if(greyEntry){
+                        greyEntry = false;
+                        tableRow.setBackgroundColor(Color.parseColor("#E8EDEF"));
+                    }
+                    else{
+                        greyEntry = true;
+                    }
+                    float density = this.getResources().getDisplayMetrics().density;
+                    tableRow.setPadding((int)density*5, (int)density*5, (int)density*5, (int)density*5);
                     tableRow.setGravity(Gravity.LEFT);
                     tableRow.setLayoutParams(new TableRow.LayoutParams(
                             TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
@@ -60,6 +72,9 @@ public class AccountDetailsActivity extends AppCompatActivity {
                     textView1.setGravity(Gravity.LEFT);
                     textView2.setGravity(Gravity.LEFT);
 
+                    textView.setTextSize(16);
+                    textView1.setTextSize(16);
+                    textView2.setTextSize(16);
 
                     textView.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
                     textView1.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT, TableRow.LayoutParams.WRAP_CONTENT));
