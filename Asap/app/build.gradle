@@ -40,7 +40,7 @@ dependencies {
     compile 'com.github.clans:fab:1.6.4'
     compile 'com.google.android.gms:play-services-auth:11.6.0'
     compile 'pub.devrel:easypermissions:0.3.0'
-    compile 'com.github.PhilJay:MPAndroidChart:v2.2.4'
+    compile 'com.github.PhilJay:MPAndroidChart:v3.0.3'
 
 
 
