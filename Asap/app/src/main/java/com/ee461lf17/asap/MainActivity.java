@@ -9,6 +9,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -46,6 +47,7 @@ import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
+import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.utils.ColorTemplate;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -105,7 +107,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
     static PieChart pieChart ;
     static PieDataSet pieDataSet ;
     static PieData pieData ;
-    static ArrayList<Entry> entries ;
+    static ArrayList<PieEntry> entries ;
     static ArrayList<String> PieEntryLabels ;
 
 
@@ -711,16 +713,18 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
                 AddValuesToPIEENTRY();
 
-                AddValuesToPieEntryLabels();
 
-                pieDataSet = new PieDataSet(entries, "");
+                pieDataSet = new PieDataSet(entries, "Budget Categories");
 
-                pieData = new PieData(PieEntryLabels, pieDataSet);
+                pieData = new PieData(pieDataSet);
 
                 pieDataSet.setColors(ColorTemplate.COLORFUL_COLORS);
 
                 pieChart.setData(pieData);
-
+                pieData.setValueTextColor(Color.WHITE);
+                pieData.setValueTextSize(20);
+                pieChart.setCenterText("Budget Name Here");
+                pieChart.setCenterTextSize(20);
                 pieChart.animateY(3000);
                 return chartView;
             }
@@ -812,25 +816,16 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     static public void AddValuesToPIEENTRY(){
 
-        entries.add(new BarEntry(2f, 0));
-        entries.add(new BarEntry(4f, 1));
-        entries.add(new BarEntry(6f, 2));
-        entries.add(new BarEntry(8f, 3));
-        entries.add(new BarEntry(7f, 4));
-        entries.add(new BarEntry(3f, 5));
+        entries.add(new PieEntry(10f, "Rent & Utilities"));
+        entries.add(new PieEntry(5f, "Food"));
+        entries.add(new PieEntry(5f, "Groceries"));
+        entries.add(new PieEntry(20f, "Shopping"));
+        entries.add(new PieEntry(30f, "Entertainment"));
+        entries.add(new PieEntry(15f, "Investment"));
+        entries.add(new PieEntry(15f, "Other"));
 
     }
 
-    static public void AddValuesToPieEntryLabels(){
-
-        PieEntryLabels.add("January");
-        PieEntryLabels.add("February");
-        PieEntryLabels.add("March");
-        PieEntryLabels.add("April");
-        PieEntryLabels.add("May");
-        PieEntryLabels.add("June");
-
-    }
 
     /**
      * Called when an activity launched here (specifically, AccountPicker
