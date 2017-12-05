@@ -384,23 +384,6 @@ public class Budgets {
             List<String> permissionResults = new ArrayList<String>();
             String budgetId = budgetNameToID(budgetName);
 
-            JsonBatchCallback<Permission> callback = new JsonBatchCallback<Permission>() {
-                @Override
-                public void onFailure(GoogleJsonError e,
-                                      HttpHeaders responseHeaders)
-                        throws IOException {
-                    // Handle error
-                    System.err.println(e.getMessage());
-                }
-
-                @Override
-                public void onSuccess(Permission permission,
-                                      HttpHeaders responseHeaders)
-                        throws IOException {
-                    System.out.println("Permission ID: " + permission.getId());
-                }
-            };
-
             Permission userPermission = new Permission()
                     .setType("user")
                     .setRole("writer")
@@ -409,6 +392,50 @@ public class Budgets {
             mService.permissions().create(budgetId, userPermission)
                     .setFields("id")
                     .execute();
+
+            String otherMasterSheetId = "";
+
+            try {
+                Sheets sheetsService = createSheetsService();
+                Sheets.Spreadsheets.Values.Get request = sheetsService.spreadsheets().values()
+                        .get(HOME_ID, "a:b");
+                Future<List<List<Object>>> f = runGetRequestOnSeparateThread(callingActivity, request);
+                List<List<Object>> list = f.get();
+                for(List<Object> l: list) {
+                    String comp = (String)l.get(0);
+                    if(comp.toLowerCase().equals(emailToAdd.toLowerCase())){
+                        otherMasterSheetId = (String) l.get(1);
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println("Something went wrong " + e);
+                return null;
+            }
+            if (otherMasterSheetId.equals("")) {
+                return permissionResults;
+            }
+            // Add budget to userSheet
+            String range = "A1";
+            String valueInputOption = "USER_ENTERED";
+            String insertDataOption = "INSERT_ROWS";
+
+            ValueRange addToUserSheetRequestBody = new ValueRange();
+            addToUserSheetRequestBody.set("range", "A1");
+
+            Object[][] ray = {{budgetName, budgetId}};
+            addToUserSheetRequestBody.set("values", new ArrayList<Object>(Arrays.asList(ray)));
+            Sheets sheetsService;
+            try {
+                sheetsService = createSheetsService();
+                final Sheets.Spreadsheets.Values.Append request =
+                        sheetsService.spreadsheets().values().append(otherMasterSheetId, range, addToUserSheetRequestBody);
+                request.setValueInputOption(valueInputOption);
+                request.setInsertDataOption(insertDataOption);
+                runAppendRequestOnSeparateThread(callingActivity, request);
+            } catch (Throwable t) {
+                System.out.println("Caught an exception: " + t.toString());
+            }
+
 
 
             return permissionResults;
@@ -973,8 +1000,15 @@ public class Budgets {
                 return getDataFromApi();
             } catch (UserRecoverableAuthIOException e) {
                 callingActivity.startActivityForResult(e.getIntent(), REQUEST_AUTHORIZATION);
-                return null;
-            } catch (Exception e) {
+                try {
+                    return getDataFromApi();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                    ArrayList<String> t = new ArrayList<String>();
+                    t.add("");
+                    return t;
+                }
+            } catch (IOException e) {
                 mLastError = e;
                 cancel(true);
                 return null;
