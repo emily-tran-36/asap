@@ -45,6 +45,7 @@ import static com.ee461lf17.asap.MainActivity.REQUEST_AUTHORIZATION;
 
 public class Budgets {
     private static final String HOME_ID = "1rf4l4FVyEMBKhRdwFEGz-rkl1zcvDImSModS5IerNA0";
+    private static final String MASTER_TEMPLATE = "12mor7KZ4u2hVICk3b_VAjusybxCZn28tNyQycCozSb4";
     private static final String BUDGET_TEMPLATE = "1uRJFJxTv9KP-WcI6gpLVcnRUmg-ISAu0rQfuZRkfrpY";
     private static final String ACCOUNT_TEMPLATE = "1JPABuXbvYn4u03_oa5KBf2R6ON2OoN4hoKDgtiTKgX8";
     private static final ExecutorService executor = Executors.newFixedThreadPool(1);
@@ -141,8 +142,36 @@ public class Budgets {
     //add its ID to the home sheet, and return the ID
     private String createNewMasterSheetFor(Activity callingActivity, String accountName) {
         //TODO: implement with real code
-        createNewBudget(callingActivity, accountName + "_master");
-        return accountName+ "_master";
+        HttpTransport transport = AndroidHttp.newCompatibleTransport();
+        JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
+        Drive mService = new com.google.api.services.drive.Drive.Builder(
+                transport, jsonFactory, credential)
+                .setApplicationName("Asap")
+                .build();
+        String newSheetId = copyFile(callingActivity, mService, MASTER_TEMPLATE, userName+"UserSheet_master");
+
+        // Add budget to userSheet
+        String range = "A1";
+        String valueInputOption = "USER_ENTERED";
+        String insertDataOption = "INSERT_ROWS";
+
+        ValueRange addToHomeSheetRequestBody = new ValueRange();
+        addToHomeSheetRequestBody.set("range", "A1");
+
+        Object[][] ray = {{userName, newSheetId}};
+        addToHomeSheetRequestBody.set("values", new ArrayList<Object>(Arrays.asList(ray)));
+        Sheets sheetsService;
+        try {
+            sheetsService = createSheetsService();
+            final Sheets.Spreadsheets.Values.Append request =
+                    sheetsService.spreadsheets().values().append(HOME_ID, range, addToHomeSheetRequestBody);
+            request.setValueInputOption(valueInputOption);
+            request.setInsertDataOption(insertDataOption);
+            runAppendRequestOnSeparateThread(callingActivity, request);
+        } catch (Throwable t) {
+            System.out.println("Caught an exception: " + t.toString());
+        }
+        return newSheetId;
     }
 
     //Adds an expenditure to the budget sheet corresponding to the given ID
